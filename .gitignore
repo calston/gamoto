@@ -106,3 +106,6 @@ venv.bak/
 # editor junk
 .vscode/
 *.swp
+
+# dev configs
+gamoto/settings-dev.py
