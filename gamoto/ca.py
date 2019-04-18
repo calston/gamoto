@@ -88,11 +88,10 @@ class CertificateAuthority(object):
         )
 
         with open(key_path, "wb") as f:
-            alg = serialization.BestAvailableEncryption(b"openstack-ansible")
             f.write(private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=alg
+                encryption_algorithm=serialization.NoEncryption()
             ))
 
         with open(cert_path, "wb") as f:
@@ -130,11 +129,10 @@ class CertificateAuthority(object):
         assert csr is not None
 
         with open(key_path, "wb") as f:
-            alg = serialization.BestAvailableEncryption(b"openstack-ansible")
             f.write(private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
-                encryption_algorithm=alg,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
             ))
 
         return True
