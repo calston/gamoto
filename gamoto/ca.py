@@ -3,7 +3,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dh
-from cryptography.x509.oid import NameOID
+from cryptography.x509.oid import NameOID, ExtendedKeyUsageOID
 
 import datetime
 import uuid
@@ -11,7 +11,8 @@ import os
 
 
 class CertificateAuthority(object):
-    def __init__(self, ou, org, email, country, province, city, key_path=None):
+    def __init__(self, ou, org, email, country, province, city, key_path=None,
+                 validity=3650):
         if key_path:
             self.key_path = key_path
         else:
@@ -28,6 +29,11 @@ class CertificateAuthority(object):
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, province),
             x509.NameAttribute(NameOID.LOCALITY_NAME, city)
         ]
+
+        self.ca_key_path = os.path.join(self.key_path, "ca.key")
+        self.ca_cert_path = os.path.join(self.key_path, "ca.crt")
+
+        self.validity_time = datetime.timedelta(validity, 0, 0)
 
     def createDH(self, key_size=2048):
         filename = os.path.join(self.key_path, "dh.pem")
@@ -47,11 +53,27 @@ class CertificateAuthority(object):
 
         return True
 
-    def createCA(self, cn):
-        key_path = os.path.join(self.key_path, "ca.key")
-        cert_path = os.path.join(self.key_path, "ca.crt")
+    def getCA(self):
+        if (os.path.exists(self.ca_key_path) and os.path.exists(
+                self.ca_cert_path)):
+            with open(self.ca_cert_path, "rb") as cafile:
+                ca_cert = x509.load_pem_x509_certificate(cafile.read(),
+                                                         default_backend())
 
-        if (os.path.exists(key_path) and os.path.exists(cert_path)):
+            with open(self.ca_key_path, "rb") as keyfile:
+                private_key = serialization.load_pem_private_key(
+                    keyfile.read(),
+                    password=None,
+                    backend=default_backend()
+                )
+
+            return (ca_cert, private_key)
+        else:
+            raise Exception("CA does not exist")
+
+    def createCA(self, cn):
+        if (os.path.exists(self.ca_key_path) and os.path.exists(
+                self.ca_cert_path)):
             return False
 
         private_key = rsa.generate_private_key(
@@ -63,16 +85,18 @@ class CertificateAuthority(object):
         public_key = private_key.public_key()
 
         common_name = x509.NameAttribute(NameOID.COMMON_NAME, cn)
-        now = datetime.datetime.today()
+        now = datetime.datetime.utcnow()
+
+        sn = x509.Name(self.x509params + [common_name])
 
         builder = x509.CertificateBuilder().subject_name(
-            x509.Name(self.x509params + [common_name])
+            sn
         ).issuer_name(
-            x509.Name([common_name])
+            sn
         ).not_valid_before(
-            now - datetime.timedelta(1, 0, 0)
+            now - datetime.timedelta(0, 1, 0)
         ).not_valid_after(
-            now + datetime.timedelta(3650, 0, 0)
+            now + self.validity_time
         ).serial_number(
             int(uuid.uuid4())
         ).public_key(
@@ -80,6 +104,14 @@ class CertificateAuthority(object):
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=None),
             critical=True
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(
+                private_key.public_key()),
+            critical=False
+        ).add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                private_key.public_key()),
+            critical=False
         )
 
         certificate = builder.sign(
@@ -87,25 +119,35 @@ class CertificateAuthority(object):
             backend=default_backend()
         )
 
-        with open(key_path, "wb") as f:
+        with open(self.ca_key_path, "wb") as f:
             f.write(private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption()
             ))
 
-        with open(cert_path, "wb") as f:
+        with open(self.ca_cert_path, "wb") as f:
             f.write(certificate.public_bytes(
                 encoding=serialization.Encoding.PEM,
             ))
 
         return True
 
+    def getCSR(self, cn):
+        csr_path = os.path.join(self.key_path, "%s.csr" % cn)
+
+        if os.path.exists(csr_path):
+            with open(csr_path, "rb") as csrfile:
+                csr = x509.load_pem_x509_csr(csrfile.read(), default_backend())
+            return csr
+        else:
+            raise Exception("CSR does not exist")
+
     def createCSR(self, cn):
         key_path = os.path.join(self.key_path, "%s.key" % cn)
-        cert_path = os.path.join(self.key_path, "%s.crt" % cn)
+        csr_path = os.path.join(self.key_path, "%s.csr" % cn)
 
-        if (os.path.exists(key_path) and os.path.exists(cert_path)):
+        if (os.path.exists(key_path) and os.path.exists(csr_path)):
             return False
 
         private_key = rsa.generate_private_key(
@@ -114,11 +156,9 @@ class CertificateAuthority(object):
             backend=default_backend()
         )
 
-        # public_key = private_key.public_key()
-
         common_name = x509.NameAttribute(NameOID.COMMON_NAME, cn)
 
-        csr = x509.CertificateSigningRequestBuilder().subject_name(
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name(self.x509params + [common_name])
         ).add_extension(
             x509.SubjectAlternativeName([
@@ -126,13 +166,101 @@ class CertificateAuthority(object):
             ]),
             critical=False,
         ).sign(private_key, hashes.SHA256(), default_backend())
-        assert csr is not None
 
+        # Write key
         with open(key_path, "wb") as f:
             f.write(private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption()
+            ))
+
+        # Write CSR
+        with open(csr_path, "wb") as f:
+            f.write(builder.public_bytes(serialization.Encoding.PEM))
+
+        return True
+
+    def signCSR(self, cn, server=False):
+        cert_path = os.path.join(self.key_path, "%s.crt" % cn)
+
+        if os.path.exists(cert_path):
+            return False
+
+        ca_cert, private_key = self.getCA()
+        csr = self.getCSR(cn)
+
+        now = datetime.datetime.utcnow()
+        if server:
+            extension = ExtendedKeyUsageOID.SERVER_AUTH
+            key_use = x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=False,
+                key_encipherment=True,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=False
+            )
+ 
+        else:
+            extension = ExtendedKeyUsageOID.CLIENT_AUTH
+            key_use = x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=False
+            )
+
+        certificate = x509.CertificateBuilder().subject_name(
+            csr.subject
+        ).issuer_name(
+            ca_cert.subject
+        ).public_key(
+            csr.public_key()
+        ).serial_number(
+            int(uuid.uuid4())
+        ).not_valid_before(
+            now - datetime.timedelta(0, 1, 0)
+        ).not_valid_after(
+            now + self.validity_time
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None),
+            critical=False
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(
+                private_key.public_key()),
+            critical=False
+        ).add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                private_key.public_key()),
+            critical=False
+        ).add_extension(
+            x509.ExtendedKeyUsage([extension]),
+            critical=False,
+        ).add_extension(
+            key_use,
+            critical=False
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(cn),
+            ]),
+            critical=False,
+        ).sign(
+            private_key=private_key, algorithm=hashes.SHA256(),
+            backend=default_backend()
+        )
+
+        with open(cert_path, "wb") as f:
+            f.write(certificate.public_bytes(
+                encoding=serialization.Encoding.PEM,
             ))
 
         return True
