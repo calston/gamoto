@@ -11,8 +11,25 @@ import os
 
 
 class CertificateAuthority(object):
+    """
+    Certificate authority class
+    """
     def __init__(self, ou, org, email, country, province, city, key_path=None,
-                 validity=3650):
+                 validity=3653):
+        """
+        Construct a CertificateAuthority object
+        parameters:
+            org: Organisation name
+            ou: Organisation unit
+            email: Email address
+            country: Country
+            province: Province
+            city: City
+            key_path (kw): Path to store and retrieve PKI
+                           default - Current working directory
+            validity (kw): Certificate validity in days
+                           default - 3653 (~10 years)
+        """
         if key_path:
             self.key_path = key_path
         else:
@@ -27,7 +44,8 @@ class CertificateAuthority(object):
             x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, org),
             x509.NameAttribute(NameOID.COUNTRY_NAME, country),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, province),
-            x509.NameAttribute(NameOID.LOCALITY_NAME, city)
+            x509.NameAttribute(NameOID.LOCALITY_NAME, city),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS, email)
         ]
 
         self.ca_key_path = os.path.join(self.key_path, "ca.key")
@@ -36,6 +54,9 @@ class CertificateAuthority(object):
         self.validity_time = datetime.timedelta(validity, 0, 0)
 
     def createDH(self, key_size=2048):
+        """
+        Generate Diffie-Hellman key
+        """
         filename = os.path.join(self.key_path, "dh.pem")
         if os.path.exists(filename):
             return False
@@ -54,6 +75,9 @@ class CertificateAuthority(object):
         return True
 
     def getCA(self):
+        """
+        Load the default CA keys
+        """
         if (os.path.exists(self.ca_key_path) and os.path.exists(
                 self.ca_cert_path)):
             with open(self.ca_cert_path, "rb") as cafile:
@@ -72,6 +96,9 @@ class CertificateAuthority(object):
             raise Exception("CA does not exist")
 
     def createCA(self, cn):
+        """
+        Create a CA with name cn
+        """
         if (os.path.exists(self.ca_key_path) and os.path.exists(
                 self.ca_cert_path)):
             return False
@@ -134,6 +161,9 @@ class CertificateAuthority(object):
         return True
 
     def getCSR(self, cn):
+        """
+        Retrieve a CSR with name cn
+        """
         csr_path = os.path.join(self.key_path, "%s.csr" % cn)
 
         if os.path.exists(csr_path):
@@ -144,6 +174,9 @@ class CertificateAuthority(object):
             raise Exception("CSR does not exist")
 
     def createCSR(self, cn):
+        """
+        Create a CSR with name cn
+        """
         key_path = os.path.join(self.key_path, "%s.key" % cn)
         csr_path = os.path.join(self.key_path, "%s.csr" % cn)
 
@@ -182,6 +215,7 @@ class CertificateAuthority(object):
         return True
 
     def signCSR(self, cn, server=False):
+        """ Sign a CSR of name cn"""
         cert_path = os.path.join(self.key_path, "%s.crt" % cn)
 
         if os.path.exists(cert_path):
@@ -193,31 +227,9 @@ class CertificateAuthority(object):
         now = datetime.datetime.utcnow()
         if server:
             extension = ExtendedKeyUsageOID.SERVER_AUTH
-            key_use = x509.KeyUsage(
-                digital_signature=True,
-                content_commitment=False,
-                key_encipherment=True,
-                data_encipherment=False,
-                key_agreement=False,
-                key_cert_sign=False,
-                crl_sign=False,
-                encipher_only=False,
-                decipher_only=False
-            )
- 
+
         else:
             extension = ExtendedKeyUsageOID.CLIENT_AUTH
-            key_use = x509.KeyUsage(
-                digital_signature=True,
-                content_commitment=False,
-                key_encipherment=False,
-                data_encipherment=False,
-                key_agreement=False,
-                key_cert_sign=False,
-                crl_sign=False,
-                encipher_only=False,
-                decipher_only=False
-            )
 
         certificate = x509.CertificateBuilder().subject_name(
             csr.subject
@@ -246,7 +258,17 @@ class CertificateAuthority(object):
             x509.ExtendedKeyUsage([extension]),
             critical=False,
         ).add_extension(
-            key_use,
+            x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=False,
+                key_encipherment=server,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=False,
+                decipher_only=False
+            ),
             critical=False
         ).add_extension(
             x509.SubjectAlternativeName([
