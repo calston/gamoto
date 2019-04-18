@@ -15,6 +15,7 @@ setup(
     install_requires=[
         'pyopenssl',
         'django==2.2',
-        'social-auth-app-django'
+        'social-auth-app-django',
+        'pyotp'
     ],
 )

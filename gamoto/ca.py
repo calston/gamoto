@@ -57,7 +57,7 @@ class CertificateAuthority(object):
         """
         Generate Diffie-Hellman key
         """
-        filename = os.path.join(self.key_path, "dh.pem")
+        filename = os.path.join(self.key_path, "dh%s.pem" % key_size)
         if os.path.exists(filename):
             return False
 
@@ -215,7 +215,12 @@ class CertificateAuthority(object):
         return True
 
     def signCSR(self, cn, server=False):
-        """ Sign a CSR of name cn"""
+        """
+        Sign a CSR of name cn. Set server kw to True if this is for TLS
+        server validation
+        """
+        assert isinstance(server, bool)
+
         cert_path = os.path.join(self.key_path, "%s.crt" % cn)
 
         if os.path.exists(cert_path):
@@ -227,7 +232,6 @@ class CertificateAuthority(object):
         now = datetime.datetime.utcnow()
         if server:
             extension = ExtendedKeyUsageOID.SERVER_AUTH
-
         else:
             extension = ExtendedKeyUsageOID.CLIENT_AUTH
 
