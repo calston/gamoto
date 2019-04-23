@@ -6,6 +6,6 @@
     state: latest
 
 - name: Configure PAM
-  template:
+  copy:
     src: google.conf
     dest: /etc/pam.d/google
