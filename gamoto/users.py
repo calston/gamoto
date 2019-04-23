@@ -3,6 +3,7 @@ from django.conf import settings
 
 import subprocess
 import pwd
+import os
 
 
 def getSystemUID():
@@ -35,16 +36,17 @@ def createUser(name):
     if not passwd:
         subprocess.Popen([
             'sudo', '/usr/sbin/useradd',
-            '-b', '/var/lib/gamoto',
             '-s', '/bin/false',
+            '-b', settings.USER_PATH,
             '-g', settings.GAMOTO_GROUP,
-            '-N', name
-        ])
+            '-N', '-M', name
+        ]).wait()
         subprocess.Popen([
-            'sudo', 'mkdir', '/var/lib/gamoto/%s' % name
-        ])
+            'sudo', 'mkdir', os.path.join(settings.USER_PATH, name)
+        ]).wait()
         subprocess.Popen([
-            'sudo', 'chown', '%s:%s', '/var/lib/gamoto/%s' % (
-                name, settings.GAMOTO_GROUP)
-        ])
-    print(passwd)
+            'sudo',
+            'chown',
+            '%s:%s' % (name, settings.GAMOTO_GROUP),
+            os.path.join(settings.USER_PATH, name)
+        ]).wait()

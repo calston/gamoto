@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.decorators import login_required
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from gamoto import users
 
@@ -13,7 +13,6 @@ def index(request):
     user_name = request.user.username
 
     passwd = users.getUser(user_name)
-    print(passwd)
 
     return render(request, "index.html", {
         'passwd': passwd,
@@ -25,7 +24,7 @@ def index(request):
 def enroll_user(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
+    if not passwd:
+        users.createUser(user_name)
 
-    return render(request, "enrollment.html", {
-        'passwd': passwd
-    })
+    return redirect('index')
