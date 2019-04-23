@@ -15,10 +15,12 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.SUCCESS('EXISTS'))
 
-        uid = users.getUID()
-        if (os.getuid() != uid) and (os.getuid() == 0):
+        uid = users.getSystemUID()
+        my_uid = os.getuid()
+        if (my_uid == 0):
             os.setuid(uid)
-        else:
+
+        elif (my_uid != uid):
             self.stdout.write(self.style.ERROR(
                 "Please run this command as root, or " + settings.GAMOTO_USER))
             return

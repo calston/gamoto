@@ -5,8 +5,27 @@ from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render
 
-# Create your views here.
+from gamoto import users
+
+
 @login_required
 def index(request):
-    return render(request, "index.html", {})
+    user_name = request.user.username
 
+    passwd = users.getUser(user_name)
+    print(passwd)
+
+    return render(request, "index.html", {
+        'passwd': passwd,
+        'name': request.user.get_full_name()
+    })
+
+
+@login_required
+def enroll_user(request):
+    user_name = request.user.username
+    passwd = users.getUser(user_name)
+
+    return render(request, "enrollment.html", {
+        'passwd': passwd
+    })

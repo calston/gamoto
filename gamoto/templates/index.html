@@ -1,4 +1,19 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Hello world</h1>
+
+    {% if passwd %}
+
+    <div class="card bg-light mb-3" style="max-width: 18rem;">
+    <div class="card-header">Enrollment</div>
+    <div class="card-body">
+        <h5 class="card-title">{{name}}</h5>
+        <p class="card-text"></p>
+    </div>
+    </div>
+
+    {% else %}
+    <br/>
+    <p>Your account is not configured yet. Please click the button below to create a new enrollment.</p>
+    <a class="btn btn-success" href="{% url "enroll" %}">Create enrollment</a> 
+    {% endif %}
 {% endblock %}

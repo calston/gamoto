@@ -109,7 +109,7 @@ venv.bak/
 *.swp
 
 # dev configs
-gamoto/settings-dev.py
+gamoto/settings_dev.py
 
 # Ansible
 *.retry
