@@ -16,16 +16,22 @@
 - file:
     path: /var/lib/gamoto
     state: directory
+    owner: gamoto
+    group: gamoto
     mode: 0755
 
 - file:
     path: /var/lib/gamoto/users
     state: directory
+    owner: gamoto
+    group: gamoto
     mode: 0755
 
 - file:
     path: /var/lib/gamoto/ca
     state: directory
+    owner: gamoto
+    group: gamoto
     mode: 0755
 
 # XXX This needs to be a lot more precise

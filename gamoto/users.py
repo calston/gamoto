@@ -1,6 +1,12 @@
 # Creates and manage users
+from django.conf import settings
+
 import subprocess
 import pwd
+
+
+def getUID():
+    return pwd.getpwnam(settings.GAMOTO_USER).pw_uid
 
 
 def createUser(name):
@@ -11,19 +17,16 @@ def createUser(name):
         pass
 
     if not passwd:
-        proc = subprocess.Popen([
+        subprocess.Popen([
             'sudo', '/usr/sbin/useradd',
             '-b', '/var/lib/gamoto',
             '-s', '/bin/false',
             '-N', name
         ])
-        proc = subprocess.Popen([
+        subprocess.Popen([
             'sudo', 'mkdir', '/var/lib/gamoto/%s' % name
         ])
-        proc = subprocess.Popen([
+        subprocess.Popen([
             'sudo', 'chown', '%s:nogroup', '/var/lib/gamoto/%s' % name
         ])
     print(passwd)
-
-if __name__ == "__main__":
-    createUser('colin.alston')
