@@ -1,0 +1,11 @@
+---
+- name: Install packages
+  package:
+    name:
+      - libpam-google-authenticator
+    state: latest
+
+- name: Configure PAM
+  template:
+    src: google.conf
+    dest: /etc/pam.d/google

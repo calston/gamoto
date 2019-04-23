@@ -19,6 +19,11 @@
     mode: 0755
 
 - file:
+    path: /var/lib/gamoto/users
+    state: directory
+    mode: 0755
+
+- file:
     path: /var/lib/gamoto/ca
     state: directory
     mode: 0755

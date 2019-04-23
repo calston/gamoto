@@ -6,4 +6,5 @@
   become: true
   roles:
     - openvpn
+    - google-authenticator
     - gamoto
