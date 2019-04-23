@@ -1,0 +1,34 @@
+---
+- name: Create group
+  group:
+    name: gamoto
+    state: present
+    system: true
+
+- name: Create uid
+  user:
+    name: gamoto
+    group: gamoto
+    system: true
+    home: /var/lib/gamoto
+    shell: /bin/false
+
+- file:
+    path: /var/lib/gamoto
+    state: directory
+    mode: 0755
+
+- file:
+    path: /var/lib/gamoto/ca
+    state: directory
+    mode: 0755
+
+# XXX This needs to be a lot more precise
+- name: Sudo
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '^gamoto'
+    line: 'gamoto   ALL=(ALL) NOPASSWD: ALL'
+# XXX
+
+  
