@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+    <div class="card bg-light mb-3" style="max-width: 18rem;">
+    <div class="card-header">Enrollment</div>
+    <div class="card-body">
+        <p class="card-text">
+            <div id="qrcode"></div>
+        </p>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static "qrcode.min.js" %}"></script>
+<script type="text/javascript">
+    new QRCode(document.getElementById("qrcode"), "{{authurl}}");
+</script>
+{% endblock %}
+

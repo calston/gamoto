@@ -24,7 +24,15 @@ def index(request):
 def enroll_user(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
+
     if not passwd:
         users.createUser(user_name)
+    else:
+        return redirect('index')
 
-    return redirect('index')
+    r, authurl = users.configureTOTP(user_name)
+
+    return render(request, "enroll.html", {
+        'name': request.user.get_full_name(),
+        'authurl': authurl
+    })
