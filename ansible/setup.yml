@@ -1,0 +1,8 @@
+---
+
+- name: Install Gamoto
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - openvpn

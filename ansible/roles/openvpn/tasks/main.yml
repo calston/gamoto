@@ -1,0 +1,24 @@
+---
+- name: Install packages
+  package:
+    name:
+      - openvpn
+      - haveged
+    state: latest
+
+- name: Configure OpenVPN
+  template:
+    src: server.conf
+    dest: /etc/openvpn/server.conf
+
+- name: Enable haveged service
+  systemd:
+    name: haveged
+    enabled: yes
+    state: started
+
+- name: Enable OpenVPN service
+  systemd:
+    name: 'openvpn@server'
+    enabled: yes
+    state: started
