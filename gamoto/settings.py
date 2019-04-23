@@ -5,6 +5,7 @@ import os
 
 # Default UID
 GAMOTO_USER = 'gamoto'
+GAMOTO_GROUP = 'gamoto'
 
 # Default paths
 BASE_PATH = '/var/lib/gamoto'
@@ -142,7 +143,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "gamoto/static"),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
