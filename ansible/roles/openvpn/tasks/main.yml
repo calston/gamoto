@@ -9,7 +9,7 @@
 - name: Configure OpenVPN
   template:
     src: server.conf
-    dest: /etc/openvpn/server.conf
+    dest: /etc/openvpn/gamoto.conf
 
 - name: Enable haveged service
   systemd:
@@ -19,6 +19,6 @@
 
 - name: Enable OpenVPN service
   systemd:
-    name: 'openvpn@server'
+    name: 'openvpn@gamoto'
     enabled: yes
     state: started
