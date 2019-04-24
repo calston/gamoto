@@ -3,9 +3,9 @@ from django.conf import settings
 
 from gamoto import ca
 
-import pyotp
-
 from io import BytesIO
+
+import pyotp
 
 import subprocess
 import random
@@ -34,6 +34,21 @@ def sudoWrite(filename, data):
     )
 
     r = proc.communicate(bytes(data, encoding='ascii'))
+
+
+def sudoRead(filename):
+    proc = subprocess.Popen(
+        ['sudo', 'cat', filename],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    data, err = proc.communicate()
+
+    if err:
+        raise Exception(err)
+
+    return data
 
 
 def createVPN(name):
@@ -137,12 +152,10 @@ def createUser(name):
 
 
 def configureTOTP(name):
-    key = pyotp.random_base32()
-
-    totp = pyotp.totp.TOTP(key)
-
     google_auth = os.path.join(settings.USER_PATH, name,
                                '.google_authenticator')
+    key = pyotp.random_base32()
+    totp = pyotp.totp.TOTP(key)
 
     codes = [str(random.randint(10000000, 99999999)) for i in range(5)]
     authfi = '\n'.join([key, '" RATE_LIMIT 3 30', '" TOTP_AUTH'] + codes)
@@ -151,8 +164,7 @@ def configureTOTP(name):
 
     sudo('chown', '%s:%s' % (name, settings.GAMOTO_GROUP), google_auth)
     sudo('chmod', '0600', google_auth)
-
-    return (
-        codes,
-        totp.provisioning_uri(name, issuer_name=settings.GAMOTO_ISSUER_NAME)
-    )
+       
+    uri =totp.provisioning_uri(name, issuer_name=settings.GAMOTO_ISSUER_NAME)
+    print(uri)
+    return (codes, uri)

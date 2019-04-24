@@ -11,23 +11,25 @@
         <p class="card-text">
         <table class="table">
             <thead>
-            <tr>
-                <th scope="col">Username</th>
-                <th scope="col">Status</th>
-                <th scope="col">IP</th>
-                <th scope="col">Downloads</th>
-            </tr>
+                <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">VPN IP</th>
+                    <th scope="col">Remote IP</th>
+                    <th scope="col"></th>
+                </tr>
             </thead>
             <tbody>
-            <tr>
-            <td>{{passwd.name}}</td>
-            <td></td>
-            <td></td>
-            <td>
-            <a class="btn btn-success btn-sm" href="{% url "vpn_zip" %}">Zip</a>
-            <a class="btn btn-success btn-sm" href="{% url "vpn_tblk" %}">Tunnelblick</a>
-            </td>
-            </tr>
+                <tr>
+                    <td>{{passwd.name}}</td>
+                    <td>{% if vpn %}Connected since {{vpn.connected}}{% else %}Disconnected{% endif %}</td>
+                    <td>{% if vpn %}{{vpn.virtual}}{% endif %}</td>
+                    <td>{% if vpn %}{{vpn.ip}}{% endif %}</td>
+                    <td>
+                        <a class="btn btn-success btn-sm" href="{% url "vpn_zip" %}">Download config</a>
+                        <a class="btn btn-info btn-sm" href="{% url "reset_2fa" %}">Reset 2FA</a>
+                    </td>
+                </tr>
             </tbody>
         </table>
         </p>
@@ -35,7 +37,7 @@
     </div>
 
     {% else %}
-    <p>Your account is not configured yet. Please click the button below to create a new enrollment.</p>
-    <a class="btn btn-success" href="{% url "enroll" %}">Create enrollment</a> 
+    <p>Your account is not configured yet. Please click the setup button below.</p>
+    <a class="btn btn-success" href="{% url "enroll" %}">Setup</a> 
     {% endif %}
 {% endblock %}

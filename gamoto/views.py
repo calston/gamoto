@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from gamoto import users
+from gamoto import users, openvpn
 
 
 def returnFile(name, content_type, data):
@@ -20,8 +20,11 @@ def index(request):
 
     passwd = users.getUser(user_name)
 
+    vpn = openvpn.getClient(user_name)
+
     return render(request, "index.html", {
         'passwd': passwd,
+        'vpn': vpn,
         'name': request.user.get_full_name()
     })
 
@@ -44,18 +47,29 @@ def vpn_tblk(request):
 
 
 @login_required
+def reset_2fa(request):
+    user_name = request.user.username
+    codes, authurl = users.configureTOTP(user_name)
+
+    return render(request, "enroll.html", {
+        'name': request.user.get_full_name(),
+        'authurl': authurl,
+        'codes': codes,
+        'reset': True
+    })
+
+
+@login_required
 def enroll_user(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
 
-    if not passwd:
-        users.createUser(user_name)
-    else:
+    if passwd:
         return redirect('index')
 
-    codes, authurl = users.configureTOTP(user_name)
-
+    users.createUser(user_name)
     users.createVPN(user_name)
+    codes, authurl = users.configureTOTP(user_name)
 
     return render(request, "enroll.html", {
         'name': request.user.get_full_name(),
