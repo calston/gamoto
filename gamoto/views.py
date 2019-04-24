@@ -9,7 +9,7 @@ from gamoto import users
 
 
 def returnFile(name, content_type, data):
-    response = HttpResponse("", content_type=content_type)
+    response = HttpResponse(data, content_type=content_type)
     response['Content-Disposition'] = 'attachment; filename="%s"' % name
     return response
 
@@ -31,7 +31,8 @@ def vpn_zip(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
 
-    return returnFile(user_name + ".zip", "application/zip", "test")
+    return returnFile(user_name + ".zip", "application/zip",
+                      users.getVPNZIP(user_name))
 
 
 @login_required
@@ -53,6 +54,8 @@ def enroll_user(request):
         return redirect('index')
 
     codes, authurl = users.configureTOTP(user_name)
+
+    users.createVPN(user_name)
 
     return render(request, "enroll.html", {
         'name': request.user.get_full_name(),

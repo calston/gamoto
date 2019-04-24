@@ -1,12 +1,18 @@
 # Creates and manage users
 from django.conf import settings
 
+from gamoto import ca
+
 import pyotp
+
+from io import BytesIO
 
 import subprocess
 import random
 import pwd
 import os
+import shutil
+import zipfile
 
 
 def getSystemUID():
@@ -31,6 +37,28 @@ def sudoWrite(filename, data):
 
 
 def createVPN(name):
+    myca = ca.CertificateAuthority(
+        settings.CA_SETUP['ou'],
+        settings.CA_SETUP['org'],
+        settings.CA_SETUP['email'],
+        settings.CA_SETUP['country'],
+        settings.CA_SETUP['state'],
+        settings.CA_SETUP['city'],
+        key_path=settings.CA_PATH
+    )
+
+    myca.createCSR(name)
+    myca.signCSR(name)
+
+
+def getVPNZIP(name):
+    user_cert = os.path.join(settings.CA_PATH, name + '.crt')
+    user_key = os.path.join(settings.CA_PATH, name + '.key')
+    server_cert = os.path.join(settings.CA_PATH, 'ca.crt')
+
+    if not os.path.exists(user_cert):
+        raise Exception("Certificate does not exist")
+
     config = [
         "client",
         "dev tun",
@@ -45,6 +73,17 @@ def createVPN(name):
         "key %s.key" % name,
         "verb 3"
     ]
+
+    zip_io = BytesIO()
+
+    with zipfile.ZipFile(zip_io, mode="w") as vpnzip:
+        vpnzip.write(str(user_cert), arcname=name + '.crt')
+        vpnzip.write(str(user_key), arcname=name + '.key')
+        vpnzip.write(str(server_cert), arcname='ca.crt')
+
+        vpnzip.writestr('client.ovpn', '\n'.join(config))
+
+    return zip_io.getvalue()
 
 
 def getUser(name):

@@ -50,4 +50,4 @@ class Command(BaseCommand):
 
         self.stdout.write("Signing server certificate... ", ending="")
         self.stdout.flush()
-        _status(myca.signCSR('openvpn'))
+        _status(myca.signCSR('openvpn', server=True))
