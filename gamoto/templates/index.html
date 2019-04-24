@@ -4,15 +4,25 @@
 
     {% if passwd %}
 
-    <div class="card bg-light mb-3" style="max-width: 18rem;">
+    <div class="card bg-light">
     <div class="card-header">VPN</div>
     <div class="card-body">
         <h5 class="card-title">{{name}}</h5>
         <p class="card-text">
-        <table>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Status</th>
+                <th scope="col">IP</th>
+                <th scope="col">Downloads</th>
+            </tr>
+            </thead>
             <tbody>
             <tr>
             <td>{{passwd.name}}</td>
+            <td></td>
+            <td></td>
             <td>
             <a class="btn btn-success btn-sm" href="{% url "vpn_zip" %}">Zip</a>
             <a class="btn btn-success btn-sm" href="{% url "vpn_tblk" %}">Tunnelblick</a>

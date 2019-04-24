@@ -71,7 +71,8 @@ def getVPNZIP(name):
         "ca ca.crt",
         "cert %s.crt" % name,
         "key %s.key" % name,
-        "verb 3"
+        "verb 3",
+        "auth-user-pass"
     ]
 
     zip_io = BytesIO()
