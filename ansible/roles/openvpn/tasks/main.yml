@@ -4,6 +4,8 @@
     name:
       - openvpn
       - haveged
+      - ntpd
+      - ntpdate
     state: latest
 
 - name: Configure OpenVPN
