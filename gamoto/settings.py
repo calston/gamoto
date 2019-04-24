@@ -12,6 +12,9 @@ BASE_PATH = '/var/lib/gamoto'
 CA_PATH = '/var/lib/gamoto/ca'
 USER_PATH = '/var/lib/gamoto/users'
 
+OPENVPN_PORT = 1194
+OPENVPN_HOSTNAME = 'vpn.acme.zp'
+
 # Default CA settings
 CA_SETUP = {
     'org': 'ACME Corp',

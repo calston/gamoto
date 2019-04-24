@@ -19,6 +19,34 @@ def sudo(*a):
     return proc.communicate()
 
 
+def sudoWrite(filename, data):
+    proc = subprocess.Popen(
+        ['sudo', 'tee', filename],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    r = proc.communicate(bytes(data, encoding='ascii'))
+
+
+def createVPN(name):
+    config = [
+        "client",
+        "dev tun",
+        "proto udp",
+        "remote %s %s" % (settings.OPENVPN_HOSTNAME, settings.OPENVPN_PORT),
+        "resolv-retry infinite",
+        "nobind",
+        "persist-key",
+        "persist-tun",
+        "ca ca.crt",
+        "cert %s.crt" % name,
+        "key %s.key" % name,
+        "verb 3"
+    ]
+
+
 def getUser(name):
     """
     Check if a user exists and return all the info about them
@@ -76,18 +104,10 @@ def configureTOTP(name):
     google_auth = os.path.join(settings.USER_PATH, name,
                                '.google_authenticator')
 
-    proc = subprocess.Popen(
-        ['sudo', 'tee', google_auth],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-
     codes = [str(random.randint(10000000, 99999999)) for i in range(5)]
-
     authfi = '\n'.join([key, '" RATE_LIMIT 3 30', '" TOTP_AUTH'] + codes)
 
-    r = proc.communicate(bytes(authfi+'\n', encoding='ascii'))
+    sudoWrite(google_auth, authfi + '\n')
 
     sudo('chown', '%s:%s' % (name, settings.GAMOTO_GROUP), google_auth)
     sudo('chmod', '0600', google_auth)

@@ -5,7 +5,17 @@
     <div class="card-header">Enrollment</div>
     <div class="card-body">
         <p class="card-text">
+        Please scan this code with Google Authenticator
+        <br/>
             <div id="qrcode"></div>
+        <br/>
+        Here are your backup codes:<br/>
+        <ul>
+        {% for code in codes %}
+        <li>{{code}}</li>
+        {% endfor %}
+        </ul>
+        <a class="btn btn-success" href="{% url "index" %}">Done</a> 
         </p>
     </div>
     </div>

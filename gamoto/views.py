@@ -2,10 +2,16 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.decorators import login_required
-
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from gamoto import users
+
+
+def returnFile(name, content_type, data):
+    response = HttpResponse("", content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % name
+    return response
 
 
 @login_required
@@ -21,6 +27,22 @@ def index(request):
 
 
 @login_required
+def vpn_zip(request):
+    user_name = request.user.username
+    passwd = users.getUser(user_name)
+
+    return returnFile(user_name + ".zip", "application/zip", "test")
+
+
+@login_required
+def vpn_tblk(request):
+    user_name = request.user.username
+    passwd = users.getUser(user_name)
+
+    return returnFile(user_name + ".tblk", "application/zip", "test")
+
+
+@login_required
 def enroll_user(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
@@ -30,9 +52,10 @@ def enroll_user(request):
     else:
         return redirect('index')
 
-    r, authurl = users.configureTOTP(user_name)
+    codes, authurl = users.configureTOTP(user_name)
 
     return render(request, "enroll.html", {
         'name': request.user.get_full_name(),
-        'authurl': authurl
+        'authurl': authurl,
+        'codes': codes
     })

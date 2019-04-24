@@ -30,5 +30,7 @@ urlpatterns = [
     ),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', views.index, name="index"),
-    path('enroll', views.enroll_user, name="enroll")
+    path('enroll', views.enroll_user, name="enroll"),
+    path('vpn_zip', views.vpn_zip, name="vpn_zip"),
+    path('vpn_tblk', views.vpn_tblk, name="vpn_tblk")
 ]
