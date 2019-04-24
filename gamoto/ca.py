@@ -63,10 +63,9 @@ class CertificateAuthority(object):
 
         parameters = dh.generate_parameters(generator=2, key_size=key_size,
                                             backend=default_backend())
-        dhbytes = parameters.generate_private_key().private_bytes(
+        dhbytes = parameters.parameter_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
+            format=serialization.ParameterFormat.PKCS3
         )
 
         with open(filename, "wb") as f:
