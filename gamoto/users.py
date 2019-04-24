@@ -166,5 +166,4 @@ def configureTOTP(name):
     sudo('chmod', '0600', google_auth)
 
     uri = totp.provisioning_uri(name, issuer_name=settings.GAMOTO_ISSUER_NAME)
-    print(uri)
     return (codes, uri)
