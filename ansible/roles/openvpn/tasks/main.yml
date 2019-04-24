@@ -11,6 +11,12 @@
     src: server.conf
     dest: /etc/openvpn/gamoto.conf
 
+- name: Remove stupid
+  replace:
+    path: '/lib/systemd/system/openvpn@.service'
+    regexp: '^(CapabilityBoundingSet.*)'
+    replace: '#\1'
+
 - name: Enable haveged service
   systemd:
     name: haveged
