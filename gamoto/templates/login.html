@@ -3,8 +3,9 @@
 
 {% block body %}
 
-<a href="{% url "social:begin" "google-oauth2" %}">Google</a>
-    
+{% if oauth %}
+<a class="btn btn-info" href="{% url "social:begin" "google-oauth2" %}">Sign in with Google</a>
+{% else %}
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>
 {% endif %}
@@ -34,4 +35,5 @@
 <input type="submit" value="login">
 <input type="hidden" name="next" value="{{ next }}">
 </form>
+{% endif %}
 {% endblock %}

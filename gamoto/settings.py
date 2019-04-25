@@ -150,8 +150,13 @@ if 'main' in config:
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
 
 if 'google' in config:
+    GOOGLE_AUTH = True
     SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config['google'].get('key', None)
     SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config['google'].get('secret', None)
+    whitelisted = config['google'].get('allowed_domains', None)
+    if whitelisted:
+        whitelisted = whitelisted.replace(' ', '').split(',')
+        SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = whitelisted
 
 if 'openvpn' in config:
     # Openvpn settings
