@@ -1,6 +1,7 @@
 """
 Django settings for gamoto project.
 """
+import configparser
 import os
 
 # Default UID
@@ -9,8 +10,8 @@ GAMOTO_GROUP = 'gamoto'
 
 # Default paths
 BASE_PATH = '/var/lib/gamoto'
-CA_PATH = '/var/lib/gamoto/ca'
-USER_PATH = '/var/lib/gamoto/users'
+CA_PATH = os.path.join(BASE_PATH, 'ca')
+USER_PATH = os.path.join(BASE_PATH, 'users')
 
 OPENVPN_PORT = 1194
 OPENVPN_HOSTNAME = 'vpn.acme.zp'
@@ -25,17 +26,10 @@ CA_SETUP = {
     'country': 'US'
 }
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%#*6c91zihs)_ptl1t3sxu$$#a)bah)wv8$-i6m*646x_gsl+n'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -50,8 +44,6 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -95,16 +87,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gamoto.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -142,8 +124,49 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
-
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_PATH, "static")
+
+# Read system config
+
+config = configparser.ConfigParser()
+config.read('/etc/gamoto/gamoto.conf')
+# Witchcraft
+if 'main' in config:
+    # Get MFA setting
+    MFA_ENABLED = config['main'].getboolean('2fa', True)
+
+    GAMOTO_USER = config['main'].get('user', GAMOTO_USER)
+    GAMOTO_GROUP = config['main'].get('group', GAMOTO_GROUP)
+
+    # Default paths
+    BASE_PATH = config['main'].get('path', BASE_PATH)
+    CA_PATH = config['main'].get('ca_path', os.path.join(BASE_PATH, 'ca'))
+    USER_PATH = config['main'].get('home_path',
+                                   os.path.join(BASE_PATH, 'users'))
+
+    STATIC_PATH = config['main'].get('static_path', os.path.join(BASE_PATH, 'static'))
+
+    SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
+
+if 'google' in config:
+    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config['google'].get('key', None)
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config['google'].get('secret', None)
+
+if 'openvpn' in config:
+    # Openvpn settings
+    OPENVPN_PORT = config['openvpn'].get('port', OPENVPN_PORT)
+    OPENVPN_HOSTNAME = config['openvpn'].get('hostname', OPENVPN_HOSTNAME)
+
+if 'ca' in config:
+    # Merge CA config
+    for key in CA_SETUP.keys():
+        CA_SETUP[key] = config['ca'].get(key, CA_SETUP[key])
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_PATH, 'gamoto.db'),
+    }
+}
