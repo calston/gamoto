@@ -17,6 +17,7 @@ setup(
         'pyopenssl',
         'django==2.2',
         'social-auth-app-django',
-        'pyotp'
+        'pyotp',
+        'gunicorn'
     ],
 )
