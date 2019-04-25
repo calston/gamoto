@@ -11,6 +11,7 @@ setup(
     author_email='colin.alston@gmail.com',
     license='BSD',
     packages=find_packages(),
+    scripts=['bin/gamoto'],
     include_package_data=True,
     install_requires=[
         'pyopenssl',
