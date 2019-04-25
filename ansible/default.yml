@@ -6,3 +6,4 @@ all:
     subnet: '10.88.19.0'
     netmask: '255.255.255.0'
     port: 1194
+    hostname: 'localhost'
