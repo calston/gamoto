@@ -165,5 +165,5 @@ def configureTOTP(name):
     sudo('chown', '%s:%s' % (name, settings.GAMOTO_GROUP), google_auth)
     sudo('chmod', '0600', google_auth)
 
-    uri = totp.provisioning_uri(name, issuer_name=settings.GAMOTO_ISSUER_NAME)
+    uri = totp.provisioning_uri(name, issuer_name=settings.CA_SETUP['org'])
     return (codes, uri)
