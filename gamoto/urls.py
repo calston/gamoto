@@ -37,6 +37,5 @@ urlpatterns = [
     path('', views.index, name="index"),
     path('enroll', views.enroll_user, name="enroll"),
     path('reset_2fa', views.reset_2fa, name="reset_2fa"),
-    path('vpn_zip', views.vpn_zip, name="vpn_zip"),
-    path('vpn_tblk', views.vpn_tblk, name="vpn_tblk")
+    path('vpn_zip', views.vpn_zip, name="vpn_zip")
 ]
