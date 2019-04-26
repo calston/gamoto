@@ -4,10 +4,9 @@ from django.conf import settings
 import os
 
 
-def getStatus():
+def _readlog(statuslog):
     clients = {}
-
-    with open(os.path.join(settings.BASE_PATH, 'openvpn-status.log')) as log:
+    with open(statuslog) as log:
         current_stat = None
 
         for ln in log:
@@ -33,6 +32,26 @@ def getStatus():
             elif current_stat == 'routes':
                 virtual, name, remote, start = ln.strip().split(',')
                 clients[name]['virtual'] = virtual
+    return clients
+
+def getStatus():
+
+    statuslog = os.path.join(settings.BASE_PATH, 'openvpn-status.log')
+
+    if not os.path.exists(statuslog):
+        return {}
+
+    try:
+        clients = _readlog(statuslog)
+    except PermissionError as err:
+        # Try to fix it
+        from gamoto import users
+        users.sudo(
+            'chown', 
+            '%s:%s' % (settings.GAMOTO_USER, settings.GAMOTO_GROUP),
+            statuslog
+        )
+        clients = _readlog(statuslog)
 
     return clients
 

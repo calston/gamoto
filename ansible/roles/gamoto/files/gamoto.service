@@ -1,0 +1,12 @@
+[Unit]
+Description=Gamoto VPN portal service
+
+[Service]
+Restart=on-failure
+WorkingDirectory=/var/lib/gamoto
+ExecStart=/usr/local/bin/gunicorn gamoto.wsgi -b 127.0.0.1:8000
+User=gamoto
+Group=gamoto
+
+[Install]
+WantedBy=multi-user.target

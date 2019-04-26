@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.contrib.auth import views as auth_views
 
 from gamoto import users, openvpn
 

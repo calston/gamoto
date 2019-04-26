@@ -14,6 +14,13 @@
     shell: /bin/false
 
 - file:
+    path: /etc/gamoto
+    state: directory
+    owner: gamoto
+    group: gamoto
+    mode: 0755
+
+- file:
     path: /var/lib/gamoto
     state: directory
     owner: gamoto
@@ -33,6 +40,32 @@
     owner: gamoto
     group: gamoto
     mode: 0755
+
+- template:
+    src: gamoto.conf
+    dest: /etc/gamoto/gamoto.conf
+
+- copy:
+    src: gamoto.service
+    dest: /lib/systemd/system/gamoto.service
+
+- shell: gamoto migrate
+  args:
+    creates: /var/lib/gamoto/gamoto.db
+
+- shell: gamoto collectstatic --noinput
+  args:
+    creates: /var/lib/gamoto/static/main.css
+
+- shell: gamoto setup
+  args:
+    creates: /var/lib/gamoto/ca/ca.crt
+
+- systemd:
+    name: gamoto
+    state: started
+    daemon_reload: yes
+    enabled: yes
 
 # XXX This needs to be a lot more precise
 - name: Sudo

@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from django.conf import settings
 
 from gamoto import views
-from django.contrib.auth import views as auth_views
+
 
 
 urlpatterns = [
@@ -25,7 +27,10 @@ urlpatterns = [
     path('', include('social_django.urls', namespace='social')),
     path(
         'accounts/login/',
-        auth_views.LoginView.as_view(template_name='login.html'),
+        auth_views.LoginView.as_view(
+            template_name='login.html',
+            extra_context={'oauth': settings.GOOGLE_AUTH}
+        ),
         name="login"
     ),
     path('accounts/', include('django.contrib.auth.urls')),

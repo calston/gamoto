@@ -110,7 +110,7 @@ venv.bak/
 
 # dev configs
 gamoto/settings_dev.py
-static/
+/static
 
 # Ansible
 *.retry

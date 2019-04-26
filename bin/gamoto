@@ -2,6 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import pwd
+import grp
 
 
 def main():
@@ -14,8 +16,33 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    execute_from_command_line(sys.argv)
 
+    # Check UID
+    from django.conf import settings
+
+    try:
+        uid = pwd.getpwnam(settings.GAMOTO_USER).pw_uid
+    except KeyError as err:
+        print("Invalid user `%s`" % settings.GAMOTO_USER)
+        sys.exit(1)
+
+    try:
+        gid = grp.getgrnam(settings.GAMOTO_GROUP).gr_gid
+    except KeyError as err:
+        print("Invalid group `%s`" % settings.GAMOTO_GROUP)
+        sys.exit(1)
+
+    try:
+        if os.getgid() != gid:
+            os.setgid(gid)
+        if os.getuid() != uid:
+            os.setuid(uid)
+    except PermissionError as err:
+        print("Couldn't set UID %s. Try again as `root` or `%s`" % (
+            uid, settings.GAMOTO_USER))
+        sys.exit(1)
+
+    execute_from_command_line(sys.argv)
 
 if __name__ == '__main__':
     main()

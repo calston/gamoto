@@ -1,0 +1,10 @@
+---
+- name: Install packages
+  package:
+    name:
+      - nginx
+    state: latest
+
+- template:
+    src: nginx-gamoto.conf
+    dest: /etc/nginx/sites-enabled/gamoto
