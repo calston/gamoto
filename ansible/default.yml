@@ -7,3 +7,14 @@ all:
     netmask: '255.255.255.0'
     port: 1194
     hostname: 'localhost'
+    google_key: ''
+    google_secret: ''
+    cookie_secret: 'fakfk!!keEQWL123j12CE!ECK12ce1KEc'
+    allowed_domain: 'gmail.com'
+    ca:
+      org: ACME Corp
+      ou: IT
+      email: support@acme.zp
+      city: ACME Village
+      state: Assur
+      country: US

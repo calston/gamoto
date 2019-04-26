@@ -8,12 +8,20 @@
       - ntpdate
     state: latest
 
-- name: Configure OpenVPN
+# Debian has bugs, sigh
+- name: Configure OpenVPN (Debian)
+  template:
+    src: server_debian.conf
+    dest: /etc/openvpn/gamoto.conf
+  when: ansible_distribution == 'Debian'
+
+- name: Configure OpenVPN (Ubuntu)
   template:
     src: server.conf
     dest: /etc/openvpn/gamoto.conf
+  when: ansible_distribution == 'Ubuntu'
 
-- name: Remove stupid
+- name: Remove systemd sandbox
   replace:
     path: '/lib/systemd/system/openvpn@.service'
     regexp: '^(CapabilityBoundingSet.*)'
