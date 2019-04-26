@@ -1,19 +1,13 @@
-<<<<<<< HEAD
-=======
 """
 Django settings for gamoto project.
 """
 import configparser
->>>>>>> 83781b05f2209f8fabc8885c0d2d0469f77af6a0
 import os
 
-DEBUG = False
 
-# Default UID
 GAMOTO_USER = 'gamoto'
 GAMOTO_GROUP = 'gamoto'
 
-# Default paths
 BASE_PATH = '/var/lib/gamoto'
 CA_PATH = os.path.join(BASE_PATH, 'ca')
 USER_PATH = os.path.join(BASE_PATH, 'users')
@@ -21,7 +15,6 @@ USER_PATH = os.path.join(BASE_PATH, 'users')
 OPENVPN_PORT = 1194
 OPENVPN_HOSTNAME = 'vpn.acme.zp'
 
-# Default CA settings
 CA_SETUP = {
     'org': 'ACME Corp',
     'ou': 'IT',
@@ -31,19 +24,11 @@ CA_SETUP = {
     'country': 'US'
 }
 
-<<<<<<< HEAD
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%#*6c91zihs)_ptl1t3sxu$$#a)bah)wv8$-i6m*646x_gsl+n'
-
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-=======
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = '%#*6c91zihs)_ptl1t3sxu$$#a)bah)wv8$-i6m*646x_gsl+n'
 
 DEBUG = True
->>>>>>> 83781b05f2209f8fabc8885c0d2d0469f77af6a0
 
 ALLOWED_HOSTS = ['*']
 
@@ -99,19 +84,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gamoto.wsgi.application'
 
-<<<<<<< HEAD
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-=======
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
->>>>>>> 83781b05f2209f8fabc8885c0d2d0469f77af6a0
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -159,7 +131,8 @@ if 'main' in config:
     USER_PATH = config['main'].get('home_path',
                                    os.path.join(BASE_PATH, 'users'))
 
-    STATIC_PATH = config['main'].get('static_path', os.path.join(BASE_PATH, 'static'))
+    STATIC_PATH = config['main'].get(
+        'static_path', os.path.join(BASE_PATH, 'static'))
 
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
 
