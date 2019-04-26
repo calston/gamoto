@@ -14,6 +14,9 @@ setup(
     packages=find_packages(),
     scripts=['bin/gamoto'],
     include_package_data=True,
+    package_data={
+        '': ['*.css', '*.js'],
+    },
     install_requires=[
         'pyopenssl',
         'django==2.2',
