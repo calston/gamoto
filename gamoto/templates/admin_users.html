@@ -2,36 +2,44 @@
 {% load static %}
 {% block body %}
 
-    <div class="card bg-light">
-    <div class="card-header">VPN</div>
-    <div class="card-body">
-        <p class="card-text">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Username</th>
-                    <th scope="col">Full name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">VPN IP</th>
-                    <th scope="col">Remote IP</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for user in users %}
-                <tr>
-                    <td>{{user.username}}</td>
-                    <td>{{user.name}}</td>
-                    <td>{{user.email}}</td>
-                    <td>{% if user.vpn %}Connected since {{user.vpn.connected}}{% else %}Disconnected{% endif %}</td>
-                    <td>{% if user.vpn %}{{user.vpn.virtual}}{% endif %}</td>
-                    <td>{% if user.vpn %}{{user.vpn.ip}}{% endif %}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </p>
-    </div>
-    </div>
+<div class="card bg-light">
+  <div class="card-header">VPN</div>
+  <div class="card-body">
+    <p class="card-text">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+          <th scope="col">Full name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Status</th>
+          <th scope="col">VPN IP</th>
+          <th scope="col">Remote IP</th>
+          <th scope="col">Groups</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{user.username}}</td>
+          <td>{{user.name}}</td>
+          <td>{{user.email}}</td>
+          <td>{% if user.vpn %}Connected since {{user.vpn.connected}}{% else %}Disconnected{% endif %}</td>
+          <td>{% if user.vpn %}{{user.vpn.virtual}}{% endif %}</td>
+          <td>{% if user.vpn %}{{user.vpn.ip}}{% endif %}</td>
+          <td>
+            {{ user.groups|join:", " }}
+          </td>
+          <td>
+            <a href="{% url "user_groups" user_id=user.id %}" class="btn btn-sm btn-info">Edit Groups</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </p>
+  </div>
+</div>
 
 {% endblock %}

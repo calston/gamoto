@@ -1,5 +1,8 @@
 # Openvpn helper things
 from django.conf import settings
+from django.contrib.auth.models import User
+
+from gamoto import users
 
 import os
 
@@ -58,3 +61,33 @@ def getStatus():
 
 def getClient(name):
     return getStatus().get(name, None)
+
+
+def updateCCDs():
+    db_users = User.objects.all()
+
+    ccd_path = os.path.join(settings.BASE_PATH, 'ccd')
+    if not os.path.exists(ccd_path):
+        os.makedirs(ccd_path)
+
+    for user in db_users:
+        pwd = users.getUser(user.username)
+
+        if not (pwd and pwd.get('mfa')):
+            continue
+
+        subnets = []
+        groups = user.groups.all()
+
+        for group in groups:
+            permissions = group.permissions.all()
+            for p in permissions:
+                subnet = p.codename.split('_')[-1]
+
+                if subnet not in subnets:
+                    subnets.append(subnet)
+
+        user_ccd_path = os.path.join(ccd_path, user.username)
+        with open(user_ccd_path, 'wt') as user_ccd:
+            for subnet in subnets:
+                user_ccd.write('push "route %s"\n' % subnet)

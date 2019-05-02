@@ -46,5 +46,7 @@ urlpatterns = [
          name="add_group_subnet"),
     path('remove_group_subnet/<int:group_id>/<int:permission_id>/',
          views.group_subnet_remove, name="remove_group_subnet"),
+    path('user_groups/<int:user_id>/',
+         views.user_group_modify, name="user_groups"),
     path('users', views.admin_users, name="users")
 ]

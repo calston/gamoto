@@ -215,18 +215,46 @@ def admin_users(request):
 
         all_users.append({
             'username': user_name,
+            'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
             'provider': social.provider,
             'last_login': user.last_login,
             'enrolled': enrolled,
             'vpn': vpn,
+            'groups': [g.name for g in groups]
         })
 
     all_users.sort(key=lambda x: x['username'])
+
+    openvpn.updateCCDs()
 
     return render(request, "admin_users.html", {
         'sbactive': 'users',
         'users': all_users,
         'admin': request.user.is_superuser
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def user_group_modify(request, user_id):
+    user = User.objects.get(id=user_id)
+
+    if request.method == "POST":
+        form = forms.UserGroupForm(request.POST, instance=user)
+        if form.is_valid():
+            user_f = form.save(commit=False)
+            user_f.save()
+            form.save_m2m()
+
+            return redirect('users')
+    else:
+        form = forms.UserGroupForm(instance=user)
+
+    return render(request, 'user_group_modify.html', {
+        'form': form,
+        'sbactive': 'endpoints',
+        'user_id': user.id,
+        'admin': request.user.is_superuser,
+        'name': user.get_full_name()
     })

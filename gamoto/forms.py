@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django import forms
 from django.core import validators
@@ -49,6 +49,14 @@ class GroupForm(forms.ModelForm):
     def label_permission(self, obj):
         subnet = obj.codename.split('_')[-1]
         return obj.name + ': ' + subnet
+
+
+class UserGroupForm(forms.ModelForm):
+    class Meta:
+        model = User
+        exclude = ('password', 'user_permissions', 'username', 'first_name',
+                   'last_name', 'last_login', 'is_staff', 'is_active',
+                   'is_superuser', 'email', 'date_joined')
 
 
 class SubnetForm(forms.ModelForm):
