@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import user_passes_test
 
 from gamoto import users, openvpn
 
@@ -26,7 +27,9 @@ def index(request):
     return render(request, "index.html", {
         'passwd': passwd,
         'vpn': vpn,
-        'name': request.user.get_full_name()
+        'admin': request.user.is_superuser,
+        'name': request.user.get_full_name(),
+        'sbactive': 'index'
     })
 
 
@@ -68,4 +71,18 @@ def enroll_user(request):
         'name': request.user.get_full_name(),
         'authurl': authurl,
         'codes': codes
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_endpoints(request):
+    return render(request, "admin_endpoints.html", {
+        'sbactive': 'endpoints'
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_users(request):
+    return render(request, "admin_users.html", {
+        'sbactive': 'users'
     })

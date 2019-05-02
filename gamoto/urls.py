@@ -21,7 +21,6 @@ from django.conf import settings
 from gamoto import views
 
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('social_django.urls', namespace='social')),
@@ -37,5 +36,7 @@ urlpatterns = [
     path('', views.index, name="index"),
     path('enroll', views.enroll_user, name="enroll"),
     path('reset_2fa', views.reset_2fa, name="reset_2fa"),
-    path('vpn_zip', views.vpn_zip, name="vpn_zip")
+    path('vpn_zip', views.vpn_zip, name="vpn_zip"),
+    path('endpoints', views.admin_endpoints, name="endpoints"),
+    path('users', views.admin_users, name="users")
 ]

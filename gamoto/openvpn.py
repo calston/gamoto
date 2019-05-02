@@ -34,6 +34,7 @@ def _readlog(statuslog):
                 clients[name]['virtual'] = virtual
     return clients
 
+
 def getStatus():
 
     statuslog = os.path.join(settings.BASE_PATH, 'openvpn-status.log')
@@ -47,7 +48,7 @@ def getStatus():
         # Try to fix it
         from gamoto import users
         users.sudo(
-            'chown', 
+            'chown',
             '%s:%s' % (settings.GAMOTO_USER, settings.GAMOTO_GROUP),
             statuslog
         )

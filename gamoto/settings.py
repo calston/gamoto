@@ -137,6 +137,8 @@ if 'main' in config:
 
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
 
+    DEBUG = config['main'].getboolean('debug', DEBUG)
+
 if 'google' in config:
     GOOGLE_AUTH = True
     SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config['google'].get('key', None)
