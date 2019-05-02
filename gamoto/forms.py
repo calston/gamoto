@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django import forms
 from django.core import validators
 
@@ -32,17 +33,28 @@ class GroupForm(forms.ModelForm):
     """
     Form for creating endpoint groups
     """
-    # password = forms.CharField(widget=forms.PasswordInput(), initial='')
     class Meta:
         model = Group
         exclude = ()
-i
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        permission_query = Permission.objects.filter(
+            content_type=ContentType.objects.get(app_label='subnet')
+        ).order_by('name')
+
+        self.fields['permissions'].queryset = permission_query
+        self.fields['permissions'].label_from_instance = self.label_permission
+
+    def label_permission(self, obj):
+        subnet = obj.codename.split('_')[-1]
+        return obj.name + ': ' + subnet
+
 
 class SubnetForm(forms.ModelForm):
     """
     Form for creating endpoint groups
     """
-    # password = forms.CharField(widget=forms.PasswordInput(), initial='')
     class Meta:
         model = Permission
         exclude = ()

@@ -39,8 +39,12 @@ urlpatterns = [
     path('vpn_zip', views.vpn_zip, name="vpn_zip"),
     path('endpoints', views.admin_endpoints, name="endpoints"),
     path('create_group', views.group_create, name="create_group"),
+    path('delete_group/<int:group_id>/', views.group_delete,
+         name="delete_group"),
     path('create_subnet', views.subnet_create, name="create_subnet"),
     path('add_group_subnet/<int:group_id>/', views.group_subnet_add,
          name="add_group_subnet"),
+    path('remove_group_subnet/<int:group_id>/<int:permission_id>/',
+         views.group_subnet_remove, name="remove_group_subnet"),
     path('users', views.admin_users, name="users")
 ]

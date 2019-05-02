@@ -107,6 +107,7 @@ def group_create(request):
         if form.is_valid():
             group = form.save(commit=False)
             group.save()
+            form.save_m2m()
 
             return redirect('endpoints')
     else:
@@ -136,6 +137,23 @@ def subnet_create(request):
         'sbactive': 'endpoints',
         'admin': request.user.is_superuser
     })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def group_delete(request, group_id):
+    grp = Group.objects.get(id=group_id)
+    grp.delete()
+    return redirect('endpoints')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def group_subnet_remove(request, group_id, permission_id):
+    grp = Group.objects.get(id=group_id)
+    perm = Permission.objects.get(id=permission_id)
+
+    grp.permissions.remove(perm)
+
+    return redirect('endpoints')
 
 
 @user_passes_test(lambda u: u.is_superuser)
