@@ -8,7 +8,6 @@ def validate_ipv4_cidr(value):
     Validates a CIDR field
     """
 
-    print(value)
     if '/' in value:
         value, prefix = value.split('/')
         try:
@@ -37,7 +36,7 @@ class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         exclude = ()
-
+i
 
 class SubnetForm(forms.ModelForm):
     """
