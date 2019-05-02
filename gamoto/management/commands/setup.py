@@ -1,5 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.db.utils import IntegrityError
 from django.conf import settings
+# from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
+
 from gamoto import ca, users
 
 import os
@@ -51,3 +55,15 @@ class Command(BaseCommand):
         self.stdout.write("Signing server certificate... ", ending="")
         self.stdout.flush()
         _status(myca.signCSR('openvpn', server=True))
+
+        self.stdout.write("Creating types and permissions... ", ending="")
+        self.stdout.flush()
+        try:
+            ctype = ContentType.objects.create(
+                app_label='subnet',
+                model='group'
+            )
+            ctype.save()
+            _status(True)
+        except IntegrityError:
+            _status(False)

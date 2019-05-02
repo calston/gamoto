@@ -36,7 +36,6 @@ def _readlog(statuslog):
 
 
 def getStatus():
-
     statuslog = os.path.join(settings.BASE_PATH, 'openvpn-status.log')
 
     if not os.path.exists(statuslog):

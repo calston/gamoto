@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+
+<a href="{% url "create_group" %}" class="btn btn-success btn-sm">New Group</a>
+<br/><br/>
+{% for group in groups %}
+<div class="card bg-light">
+  <div class="card-header">Group: {{group.name}}</div>
+  <div class="card-body">
+    <p class="card-text">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Subnet</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subnet in group.subnets %}
+        <tr>
+          <td>{{subnet.name}}</td>
+          <td>{{subnet.subnet}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url "add_group_subnet" group_id=group.id %}" class="btn btn-sm btn-info">Add subnet</a>
+    </p>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
