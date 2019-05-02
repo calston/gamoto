@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import ObjectDoesNotExist
 
 from gamoto import users, openvpn
 
@@ -83,6 +84,36 @@ def admin_endpoints(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def admin_users(request):
+    all_users = []
+    for user in User.objects.all():
+        user_name = user.username
+        try:
+            social = user.social_auth.get()
+        except ObjectDoesNotExist as err:
+            continue
+
+        groups = user.groups.all()
+        passwd = users.getUser(user_name)
+
+        enrolled = False
+        if passwd:
+            enrolled = True
+
+        vpn = openvpn.getClient(user_name)
+
+        all_users.append({
+            'username': user_name,
+            'name': user.get_full_name(),
+            'email': user.email,
+            'provider': social.provider,
+            'last_login': user.last_login,
+            'enrolled': enrolled,
+            'vpn': vpn,
+        })
+
+    all_users.sort(key=lambda x: x['username'])
+
     return render(request, "admin_users.html", {
-        'sbactive': 'users'
+        'sbactive': 'users',
+        'users': all_users
     })
