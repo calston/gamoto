@@ -42,6 +42,13 @@
     group: gamoto
     mode: 0755
 
+- file:
+    path: /var/lib/gamoto/ccd
+    state: directory
+    owner: gamoto
+    group: gamoto
+    mode: 0755
+
 - name: Install packages
   package:
     name:
