@@ -68,6 +68,7 @@ def enroll_user(request):
     users.createUser(user_name)
     users.createVPN(user_name)
     codes, authurl = users.configureTOTP(user_name)
+    openvpn.updateCCDs()
 
     return render(request, "enroll.html", {
         'name': request.user.get_full_name(),
@@ -108,6 +109,7 @@ def group_create(request):
             group = form.save(commit=False)
             group.save()
             form.save_m2m()
+            openvpn.updateCCDs()
 
             return redirect('endpoints')
     else:
@@ -127,6 +129,7 @@ def subnet_create(request):
         if form.is_valid():
             subnet = form.save(commit=False)
             subnet.save()
+            openvpn.updateCCDs()
 
             return redirect('endpoints')
     else:
@@ -143,6 +146,7 @@ def subnet_create(request):
 def group_delete(request, group_id):
     grp = Group.objects.get(id=group_id)
     grp.delete()
+    openvpn.updateCCDs()
     return redirect('endpoints')
 
 
@@ -152,6 +156,8 @@ def group_subnet_remove(request, group_id, permission_id):
     perm = Permission.objects.get(id=permission_id)
 
     grp.permissions.remove(perm)
+
+    openvpn.updateCCDs()
 
     return redirect('endpoints')
 
@@ -180,6 +186,7 @@ def group_subnet_add(request, group_id):
                 permission.save()
 
             group.permissions.add(permission)
+            openvpn.updateCCDs()
 
             return redirect('endpoints')
     else:
@@ -227,8 +234,6 @@ def admin_users(request):
 
     all_users.sort(key=lambda x: x['username'])
 
-    openvpn.updateCCDs()
-
     return render(request, "admin_users.html", {
         'sbactive': 'users',
         'users': all_users,
@@ -246,6 +251,8 @@ def user_group_modify(request, user_id):
             user_f = form.save(commit=False)
             user_f.save()
             form.save_m2m()
+
+            openvpn.updateCCDs()
 
             return redirect('users')
     else:
