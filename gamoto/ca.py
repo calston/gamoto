@@ -50,6 +50,7 @@ class CertificateAuthority(object):
 
         self.ca_key_path = os.path.join(self.key_path, "ca.key")
         self.ca_cert_path = os.path.join(self.key_path, "ca.crt")
+        self.crl_path = os.path.join(self.key_path, "crl.pem")
 
         self.validity_time = datetime.timedelta(validity, 0, 0)
 
@@ -289,3 +290,71 @@ class CertificateAuthority(object):
             ))
 
         return True
+
+    def getCert(self, name):
+        crt_path = os.path.join(self.key_path, "%s.crt" % name)
+
+        if os.path.exists(crt_path):
+            with open(crt_path, "rb") as crtfile:
+                cert = x509.load_pem_x509_certificate(crtfile.read(),
+                                                      default_backend())
+            return cert
+        else:
+            return None
+
+    def getCRL(self):
+        now = datetime.datetime.utcnow()
+        end = now + self.validity_time
+
+        ca, private_key = self.getCA()
+
+        crl = x509.CertificateRevocationListBuilder().issuer_name(
+            ca.subject
+        ).last_update(
+            now
+        ).next_update(
+            end
+        )
+
+        if os.path.exists(self.crl_path):
+            with open(self.crl_path, "rb") as crlfile:
+                current_crl = x509.load_pem_x509_crl(crlfile.read(),
+                                                     default_backend())
+
+                for cert in current_crl:
+                    crl = crl.add_revoked_certificate(cert)
+
+        return crl
+
+    def revokeCertificate(self, name):
+        cert = self.getCert(name)
+        if not cert:
+            return None
+
+        now = datetime.datetime.utcnow()
+        crl = self.getCRL()
+        ca, private_key = self.getCA()
+
+        revoked = x509.RevokedCertificateBuilder().serial_number(
+            cert.serial_number
+        ).revocation_date(
+            now
+        ).build(default_backend())
+
+        crl = crl.add_revoked_certificate(revoked)
+
+        crl = crl.sign(
+            private_key=private_key,
+            algorithm=hashes.SHA256(),
+            backend=default_backend()
+        )
+
+        with open(self.crl_path, "wb") as crlfile:
+            crlfile.write(crl.public_bytes(
+                encoding=serialization.Encoding.PEM
+            ))
+
+    def createCRL(self):
+        self.createCSR('1')
+        self.signCSR('1')
+        self.revokeCertificate('1')
