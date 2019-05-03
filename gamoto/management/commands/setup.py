@@ -56,6 +56,10 @@ class Command(BaseCommand):
         self.stdout.flush()
         _status(myca.signCSR('openvpn', server=True))
 
+        self.stdout.write("Generating CRL... ", ending="")
+        self.stdout.flush()
+        _status(myca.createCRL())
+
         self.stdout.write("Creating types and permissions... ", ending="")
         self.stdout.flush()
         try:
