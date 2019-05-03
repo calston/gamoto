@@ -326,7 +326,25 @@ class CertificateAuthority(object):
 
         return crl
 
+    def isRevoked(self, name):
+        cert = self.getCert(name)
+        if not cert:
+            return None
+
+        if os.path.exists(self.crl_path):
+            with open(self.crl_path, "rb") as crlfile:
+                current_crl = x509.load_pem_x509_crl(crlfile.read(),
+                                                     default_backend())
+
+                for revoked in current_crl:
+                    if cert.serial_number == revoked.serial_number:
+                        return True
+        return False
+
     def revokeCertificate(self, name):
+        if self.isRevoked(name):
+            return None
+
         cert = self.getCert(name)
         if not cert:
             return None
@@ -354,7 +372,9 @@ class CertificateAuthority(object):
                 encoding=serialization.Encoding.PEM
             ))
 
+        return True
+
     def createCRL(self):
         self.createCSR('1')
         self.signCSR('1')
-        self.revokeCertificate('1')
+        return self.revokeCertificate('1')
