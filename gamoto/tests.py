@@ -7,7 +7,7 @@ from django.urls.resolvers import URLPattern
 class TestRockfaceCase(TestCase):
     def test_authentication_required(self):
         from gamoto import urls
-        
+
         redirect_map = []
         for url in urls.urlpatterns:
             if not isinstance(url, URLPattern):

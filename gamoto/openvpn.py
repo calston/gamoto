@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from gamoto import users
 
 import os
+import ipaddress
 
 
 def _readlog(statuslog):
@@ -63,6 +64,29 @@ def getClient(name):
     return getStatus().get(name, None)
 
 
+def getRoutes(user):
+    if isinstance(user, str):
+        user = User.objects.get(username=user)
+
+    pwd = users.getUser(user.username)
+
+    if not (pwd and pwd.get('mfa')):
+        return None
+
+    subnets = []
+    groups = user.groups.all()
+
+    for group in groups:
+        permissions = group.permissions.all()
+        for p in permissions:
+            subnet = p.codename.split('_')[-1]
+
+            if subnet not in subnets:
+                subnets.append(subnet)
+
+    return subnets
+
+
 def updateCCDs():
     db_users = User.objects.all()
 
@@ -71,23 +95,13 @@ def updateCCDs():
         os.makedirs(ccd_path)
 
     for user in db_users:
-        pwd = users.getUser(user.username)
-
-        if not (pwd and pwd.get('mfa')):
-            continue
-
-        subnets = []
-        groups = user.groups.all()
-
-        for group in groups:
-            permissions = group.permissions.all()
-            for p in permissions:
-                subnet = p.codename.split('_')[-1]
-
-                if subnet not in subnets:
-                    subnets.append(subnet)
-
-        user_ccd_path = os.path.join(ccd_path, user.username)
-        with open(user_ccd_path, 'wt') as user_ccd:
-            for subnet in subnets:
-                user_ccd.write('push "route %s"\n' % subnet)
+        subnets = getRoutes(user)
+        if subnets:
+            user_ccd_path = os.path.join(ccd_path, user.username)
+            with open(user_ccd_path, 'wt') as user_ccd:
+                for subnet in subnets:
+                    net = ipaddress.ip_network(subnet)
+                    user_ccd.write('push "route %s %s"\n' % (
+                        net.network_address.exploded,
+                        net.netmask.exploded
+                    ))

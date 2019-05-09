@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from gamoto import ca, users
 
 import os
+import sys
 
 
 class Command(BaseCommand):
@@ -19,16 +20,17 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.SUCCESS('EXISTS'))
 
-        uid = users.getSystemUID()
-        my_uid = os.getuid()
-        if (my_uid == 0):
-            os.setuid(uid)
-
-        elif (my_uid != uid):
+        if (users.getSystemUID() != os.getuid()):
             self.stdout.write(self.style.ERROR(
                 "Please run this command as root, or " + settings.GAMOTO_USER))
-            return
+            sys.exit(1)
 
+        # Ensure paths exist
+        for path in [settings.BASE_PATH, settings.CA_PATH, settings.USER_PATH]:
+            if not os.path.isdir(path):
+                os.makedirs(path)
+
+        # Setup CA
         myca = ca.CertificateAuthority(
             settings.CA_SETUP['ou'],
             settings.CA_SETUP['org'],
@@ -41,7 +43,6 @@ class Command(BaseCommand):
 
         self.stdout.write("Creating Diffie-Hellman parameters... ", ending="")
         self.stdout.flush()
-
         _status(myca.createDH())
 
         self.stdout.write("Building certificate authority... ", ending="")
@@ -60,6 +61,7 @@ class Command(BaseCommand):
         self.stdout.flush()
         _status(myca.createCRL())
 
+        # Setup DB
         self.stdout.write("Creating types and permissions... ", ending="")
         self.stdout.flush()
         try:

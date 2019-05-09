@@ -15,6 +15,8 @@ USER_PATH = os.path.join(BASE_PATH, 'users')
 OPENVPN_PORT = 1194
 OPENVPN_HOSTNAME = 'vpn.acme.zp'
 
+VPN_INTERFACE = 'tun0'
+
 CA_SETUP = {
     'org': 'ACME Corp',
     'ou': 'IT',
@@ -157,7 +159,6 @@ if 'ca' in config:
     # Merge CA config
     for key in CA_SETUP.keys():
         CA_SETUP[key] = config['ca'].get(key, CA_SETUP[key])
-
 
 DATABASES = {
     'default': {
