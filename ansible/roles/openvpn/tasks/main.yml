@@ -27,6 +27,12 @@
     regexp: '^(CapabilityBoundingSet.*)'
     replace: '#\1'
 
+- name: Remove systemd Nproc
+  replace:
+    path: '/lib/systemd/system/openvpn@.service'
+    regexp: '^(LimitNPROC.*)'
+    replace: '#\1'
+
 - name: Enable haveged service
   systemd:
     name: haveged
