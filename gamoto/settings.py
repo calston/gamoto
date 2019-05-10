@@ -17,6 +17,8 @@ OPENVPN_HOSTNAME = 'vpn.acme.zp'
 
 VPN_INTERFACE = 'tun0'
 
+MANAGE_IPTABLES = True
+
 CA_SETUP = {
     'org': 'ACME Corp',
     'ou': 'IT',
@@ -138,6 +140,7 @@ if 'main' in config:
         'static_path', os.path.join(BASE_PATH, 'static'))
 
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
+    MANAGE_IPTABLES = config['main'].get('manage_iptables', MANAGE_IPTABLES)
 
     DEBUG = config['main'].getboolean('debug', DEBUG)
 
