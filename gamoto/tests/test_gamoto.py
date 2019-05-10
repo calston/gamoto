@@ -37,6 +37,10 @@ class TestRockFace(TestCase):
 class TestOpenvpn(TestCase):
     def setUp(self):
         self.sudo_commands = []
+        self.blank_ipt = False
+
+        self.ipt_copy = [i for i in data.IPTABLES_SAVE]
+
         ctype = ContentType.objects.create(
             app_label='subnet',
             model='group'
@@ -55,11 +59,17 @@ class TestOpenvpn(TestCase):
 
         group.permissions.add(perm)
 
+    def tearDown(self):
+        data.IPTABLES_SAVE = self.ipt_copy
+
     def _fake_sudo(self, *a):
         self.sudo_commands.append(' '.join(a))
         result = b''
         if 'iptables-save' in a:
-            result = bytes('\n'.join(data.IPTABLES_SAVE), encoding='ascii')
+            if self.blank_ipt:
+                result = b'\n'
+            else:
+                result = bytes('\n'.join(data.IPTABLES_SAVE), encoding='ascii')
 
         elif a[1] == '-N':
             data.IPTABLES_SAVE.insert(5, ":%s - [0:0]" % a[2])
@@ -80,6 +90,34 @@ class TestOpenvpn(TestCase):
             'mfa': True
         }
 
+    def test_blank_iptables(self):
+        # For dumb reasons iptables-save can return nothing
+        from gamoto.management.commands import openvpn
+        from gamoto import users
+
+        openvpn.users.sudo = self._fake_sudo
+        openvpn.users.getUser = self._fake_get_user
+
+        self.blank_ipt = True
+
+        cmd = openvpn.Command()
+
+        tables = cmd.getIptables()
+
+        cmd.setupIptables()
+
+        tables = cmd.getIptables()
+
+        self.blank_ipt = False
+
+        self.assertListEqual(self.sudo_commands, [
+            'iptables-save',
+            'iptables-save',
+            '/sbin/iptables -N openvpn',
+            '/sbin/iptables -I INPUT 1 -i tun0 -j openvpn',
+            'iptables-save'
+        ])
+
     def test_connect(self):
         from gamoto.management.commands import openvpn
         from gamoto import users
@@ -94,13 +132,11 @@ class TestOpenvpn(TestCase):
 
         cmd.handle()
 
-        command_flow = [
+        self.assertListEqual(self.sudo_commands, [
             'iptables-save',
             '/sbin/iptables -N openvpn',
             '/sbin/iptables -I INPUT 1 -i tun0 -j openvpn',
             'iptables-save',
             '/sbin/iptables -A openvpn -i tun0 -s 10.88.20.35 -d 10.1.2.0/24'
             ' -m comment --comment "test"'
-        ]
-
-        self.assertListEqual(self.sudo_commands, command_flow)
+        ])
