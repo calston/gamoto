@@ -86,7 +86,7 @@
   lineinfile:
     path: /etc/sudoers
     regexp: '^gamoto'
-    line: 'gamoto   ALL=(ALL) NOPASSWD: /bin/cat,/bin/chmod,/bin/chown,/bin/mkdir,/usr/sbin/useradd,/usr/bin/stat,/usr/bin/tee'
+    line: 'gamoto   ALL=(ALL) NOPASSWD: /bin/cat,/bin/chmod,/bin/chown,/bin/mkdir,/usr/sbin/useradd,/usr/bin/stat,/usr/bin/tee,/sbin/iptables,/sbin/iptables-save'
 
 - name: Generate CA (this takes a while first time)
   shell: gamoto setup
