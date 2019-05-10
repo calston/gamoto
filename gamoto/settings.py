@@ -15,6 +15,8 @@ USER_PATH = os.path.join(BASE_PATH, 'users')
 OPENVPN_PORT = 1194
 OPENVPN_HOSTNAME = 'vpn.acme.zp'
 
+PAGE_TITLE = 'Gamoto'
+
 VPN_INTERFACE = 'tun0'
 
 MANAGE_IPTABLES = True
@@ -142,6 +144,8 @@ if 'main' in config:
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
     MANAGE_IPTABLES = config['main'].getboolean('manage_iptables',
                                                 MANAGE_IPTABLES)
+
+    PAGE_TITLE = config['main'].get('page_title', PAGE_TITLE)
 
     DEBUG = config['main'].getboolean('debug', DEBUG)
 

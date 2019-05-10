@@ -8,6 +8,7 @@ from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from gamoto import users, openvpn, forms
 
@@ -31,7 +32,8 @@ def index(request):
         'vpn': vpn,
         'admin': request.user.is_superuser,
         'name': request.user.get_full_name(),
-        'sbactive': 'index'
+        'sbactive': 'index',
+        'page_title': settings.PAGE_TITLE
     })
 
 
@@ -50,6 +52,7 @@ def reset_2fa(request):
     codes, authurl = users.configureTOTP(user_name)
 
     return render(request, "enroll.html", {
+        'page_title': settings.PAGE_TITLE,
         'name': request.user.get_full_name(),
         'authurl': authurl,
         'codes': codes,
@@ -71,6 +74,7 @@ def enroll_user(request):
     openvpn.updateCCDs()
 
     return render(request, "enroll.html", {
+        'page_title': settings.PAGE_TITLE,
         'name': request.user.get_full_name(),
         'authurl': authurl,
         'codes': codes
@@ -95,6 +99,7 @@ def admin_endpoints(request):
         })
 
     return render(request, "admin_endpoints.html", {
+        'page_title': settings.PAGE_TITLE,
         'sbactive': 'endpoints',
         'admin': request.user.is_superuser,
         'groups': groups
@@ -116,6 +121,7 @@ def group_create(request):
         form = forms.GroupForm()
 
     return render(request, 'admin_group_create.html', {
+        'page_title': settings.PAGE_TITLE,
         'form': form,
         'sbactive': 'endpoints',
         'admin': request.user.is_superuser
@@ -136,6 +142,7 @@ def subnet_create(request):
         form = forms.SubnetForm()
 
     return render(request, 'admin_subnet_create.html', {
+        'page_title': settings.PAGE_TITLE,
         'form': form,
         'sbactive': 'endpoints',
         'admin': request.user.is_superuser
@@ -193,6 +200,7 @@ def group_subnet_add(request, group_id):
         form = forms.GroupSubnetForm()
 
     return render(request, 'admin_subnet_add.html', {
+        'page_title': settings.PAGE_TITLE,
         'form': form,
         'sbactive': 'endpoints',
         'group_id': group_id,
@@ -235,6 +243,7 @@ def admin_users(request):
     all_users.sort(key=lambda x: x['username'])
 
     return render(request, "admin_users.html", {
+        'page_title': settings.PAGE_TITLE,
         'sbactive': 'users',
         'users': all_users,
         'admin': request.user.is_superuser
@@ -259,6 +268,7 @@ def user_group_modify(request, user_id):
         form = forms.UserGroupForm(instance=user)
 
     return render(request, 'user_group_modify.html', {
+        'page_title': settings.PAGE_TITLE,
         'form': form,
         'sbactive': 'endpoints',
         'user_id': user.id,
