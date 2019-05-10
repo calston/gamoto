@@ -66,6 +66,38 @@ def createVPN(name):
     myca.signCSR(name)
 
 
+def getVPNInline(name):
+    user_cert = os.path.join(settings.CA_PATH, name + '.crt')
+    user_key = os.path.join(settings.CA_PATH, name + '.key')
+    server_cert = os.path.join(settings.CA_PATH, 'ca.crt')
+
+    if not os.path.exists(user_cert):
+        raise Exception("Certificate does not exist")
+
+    config = [
+        "client",
+        "dev tun",
+        "proto udp",
+        "remote %s %s" % (settings.OPENVPN_HOSTNAME, settings.OPENVPN_PORT),
+        "resolv-retry infinite",
+        "nobind",
+        "persist-key",
+        "persist-tun",
+        "verb 3",
+        "auth-user-pass"
+    ]
+
+    ca = open(server_cert).read()
+    config.append('<ca>\n%s</ca>\n' % ca)
+    
+    key = open(user_key).read()
+    config.append('<key>\n%s</key>\n' % key)
+
+    cert = open(user_cert).read()
+    config.append('<cert>\n%s</cert>\n' % cert)
+
+    return '\n'.join(config)
+
 def getVPNZIP(name):
     user_cert = os.path.join(settings.CA_PATH, name + '.crt')
     user_key = os.path.join(settings.CA_PATH, name + '.key')

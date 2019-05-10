@@ -49,9 +49,7 @@ class Command(BaseCommand):
     def setupIptables(self):
         # Makes sure iptables has our chain
         ipt = self.getIptables()
-        print(ipt.get('filter', []))
-        if 'openvpn' not in ipt.get('filter', []):
-            print('Create table')
+        if 'openvpn' not in ipt.get('filter', {}):
             self.iptables('-N openvpn')
 
         jump_rule = '-i %s -j openvpn' % settings.VPN_INTERFACE

@@ -47,6 +47,15 @@ def vpn_zip(request):
 
 
 @login_required
+def vpn_ovpn(request):
+    user_name = request.user.username
+    passwd = users.getUser(user_name)
+
+    return returnFile("smartpension.ovpn", "text/plain",
+                      users.getVPNInline(user_name))
+
+
+@login_required
 def reset_2fa(request):
     user_name = request.user.username
     codes, authurl = users.configureTOTP(user_name)

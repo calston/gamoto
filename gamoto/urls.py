@@ -37,6 +37,7 @@ urlpatterns = [
     path('enroll', views.enroll_user, name="enroll"),
     path('reset_2fa', views.reset_2fa, name="reset_2fa"),
     path('vpn_zip', views.vpn_zip, name="vpn_zip"),
+    path('vpn_ovpn', views.vpn_ovpn, name="vpn_ovpn"),
     path('endpoints', views.admin_endpoints, name="endpoints"),
     path('create_group', views.group_create, name="create_group"),
     path('delete_group/<int:group_id>/', views.group_delete,

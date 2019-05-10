@@ -16,6 +16,7 @@
                     <th scope="col">Status</th>
                     <th scope="col">VPN IP</th>
                     <th scope="col">Remote IP</th>
+                    <th scope="col">Download</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -26,7 +27,11 @@
                     <td>{% if vpn %}{{vpn.virtual}}{% endif %}</td>
                     <td>{% if vpn %}{{vpn.ip}}{% endif %}</td>
                     <td>
-                        <a class="btn btn-success btn-sm" href="{% url "vpn_zip" %}">Download config</a>
+                        <a class="btn btn-info btn-sm" href="{% url "vpn_ovpn" %}"><i class="fab fa-windows"></i></a>
+                        <a class="btn btn-success btn-sm" href="{% url "vpn_ovpn" %}"><i class="fab fa-apple"></i></a>
+                        <a class="btn btn-warning btn-sm" href="{% url "vpn_zip" %}"><i class="fab fa-linux"></i></a>
+                    </td>
+                    <td>
                         <a class="btn btn-info btn-sm" href="{% url "reset_2fa" %}">Reset 2FA</a>
                     </td>
                 </tr>
