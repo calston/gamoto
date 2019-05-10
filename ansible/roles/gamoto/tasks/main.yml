@@ -90,8 +90,6 @@
 
 - name: Generate CA (this takes a while first time)
   shell: gamoto setup
-  args:
-    creates: /var/lib/gamoto/ca/ca.crt
 
 - name: Start Gamoto
   systemd:
