@@ -140,7 +140,8 @@ if 'main' in config:
         'static_path', os.path.join(BASE_PATH, 'static'))
 
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
-    MANAGE_IPTABLES = config['main'].get('manage_iptables', MANAGE_IPTABLES)
+    MANAGE_IPTABLES = config['main'].getboolean('manage_iptables',
+                                                MANAGE_IPTABLES)
 
     DEBUG = config['main'].getboolean('debug', DEBUG)
 
