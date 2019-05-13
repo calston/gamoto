@@ -51,7 +51,9 @@ def vpn_ovpn(request):
     user_name = request.user.username
     passwd = users.getUser(user_name)
 
-    return returnFile("smartpension.ovpn", "text/plain",
+    name = settings.CA_SETUP['org'].lower()
+
+    return returnFile(name+".ovpn", "text/plain",
                       users.getVPNInline(user_name))
 
 
