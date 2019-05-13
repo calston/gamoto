@@ -30,7 +30,8 @@ def _readlog(statuslog):
                     'ip': remote_ip.split(':')[0],
                     'rx_bytes': int(rx),
                     'tx_bytes': int(tx),
-                    'connected': start
+                    'connected': start,
+                    'virtual': ''
                 }
 
             elif current_stat == 'routes':

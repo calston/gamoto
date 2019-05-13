@@ -27,6 +27,18 @@
     regexp: '^(CapabilityBoundingSet.*)'
     replace: '#\1'
 
+- name: Remove systemd sandbox
+  replace:
+    path: '/lib/systemd/system/openvpn@.service'
+    regexp: '^(ProtectHome.*)'
+    replace: '#\1'
+
+- name: Remove systemd sandbox
+  replace:
+    path: '/lib/systemd/system/openvpn@.service'
+    regexp: '^(ProtectSystem.*)'
+    replace: '#\1'
+
 - name: Remove systemd Nproc
   replace:
     path: '/lib/systemd/system/openvpn@.service'
