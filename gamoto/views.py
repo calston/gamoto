@@ -240,6 +240,7 @@ def admin_users(request):
         all_users.append({
             'username': user_name,
             'id': user.id,
+            'active': user.is_active,
             'name': user.get_full_name(),
             'email': user.email,
             'provider': social.provider,
@@ -284,3 +285,32 @@ def user_group_modify(request, user_id):
         'admin': request.user.is_superuser,
         'name': user.get_full_name()
     })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def user_delete(request, user_id):
+    user = User.objects.get(id=user_id)
+    users.removeUser(user.username)
+
+    user.delete()
+
+    return redirect('users')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def user_disable(request, user_id):
+    user = User.objects.get(id=user_id)
+
+    user.is_active = False
+    user.save()
+
+    return redirect('users')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def user_enable(request, user_id):
+    user = User.objects.get(id=user_id)
+    user.is_active = True
+    user.save()
+
+    return redirect('users')

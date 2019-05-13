@@ -28,7 +28,10 @@ urlpatterns = [
         'accounts/login/',
         auth_views.LoginView.as_view(
             template_name='login.html',
-            extra_context={'oauth': settings.GOOGLE_AUTH}
+            extra_context={
+                'oauth': settings.GOOGLE_AUTH,
+                'page_title': settings.PAGE_TITLE
+            }
         ),
         name="login"
     ),
@@ -49,5 +52,11 @@ urlpatterns = [
          views.group_subnet_remove, name="remove_group_subnet"),
     path('user_groups/<int:user_id>/',
          views.user_group_modify, name="user_groups"),
+    path('user_delete/<int:user_id>/',
+         views.user_delete, name="user_delete"),
+    path('user_disable/<int:user_id>/',
+         views.user_disable, name="user_disable"),
+    path('user_enable/<int:user_id>/',
+         views.user_enable, name="user_enable"),
     path('users', views.admin_users, name="users")
 ]

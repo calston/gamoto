@@ -51,8 +51,8 @@ def sudoRead(filename):
     return data
 
 
-def createVPN(name):
-    myca = ca.CertificateAuthority(
+def getCA():
+    return ca.CertificateAuthority(
         settings.CA_SETUP['ou'],
         settings.CA_SETUP['org'],
         settings.CA_SETUP['email'],
@@ -62,6 +62,9 @@ def createVPN(name):
         key_path=settings.CA_PATH
     )
 
+
+def createVPN(name):
+    myca = getCA()
     myca.createCSR(name)
     myca.signCSR(name)
 
@@ -175,12 +178,34 @@ def createUser(name):
             '-g', settings.GAMOTO_GROUP,
             '-N', '-M', name
         )
-        sudo('mkdir', os.path.join(settings.USER_PATH, name))
+        sudo('/bin/mkdir', os.path.join(settings.USER_PATH, name))
         sudo(
-            'chown',
+            '/bin/chown',
             '%s:%s' % (name, settings.GAMOTO_GROUP),
             os.path.join(settings.USER_PATH, name)
         )
+
+
+def removeUser(name):
+    passwd = getUser(name)
+    if passwd:
+        myca = getCA()
+
+        # Add certificate to CRL
+        myca.revokeCertificate(name)
+
+        # Remove old certificate
+        user_certs = [
+            os.path.join(settings.CA_PATH, name + '.key'),
+            os.path.join(settings.CA_PATH, name + '.csr'),
+            os.path.join(settings.CA_PATH, name + '.crt')
+        ]
+        for cert in user_certs:
+            if os.path.exists(cert):
+                os.remove(cert)
+
+        # Delete the user
+        sudo('/usr/sbin/userdel', '-rf', name)
 
 
 def configureTOTP(name):
@@ -194,8 +219,8 @@ def configureTOTP(name):
 
     sudoWrite(google_auth, authfi + '\n')
 
-    sudo('chown', '%s:%s' % (name, settings.GAMOTO_GROUP), google_auth)
-    sudo('chmod', '0600', google_auth)
+    sudo('/bin/chown', '%s:%s' % (name, settings.GAMOTO_GROUP), google_auth)
+    sudo('/bin/chmod', '0600', google_auth)
 
     uri = totp.provisioning_uri(name, issuer_name=settings.CA_SETUP['org'])
     return (codes, uri)

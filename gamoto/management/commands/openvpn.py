@@ -80,6 +80,12 @@ class Command(BaseCommand):
                 users.sudo('/sbin/iptables', '-D', 'openvpn', idx)
 
     def connect(self, user):
+        u = User.objects.get(username=user)
+
+        if not u.is_active:
+            self.stderr.write('User '+user+' disabled\n')
+            sys.exit(1)
+
         subnets = openvpn.getRoutes(user)
         ip = os.getenv('ifconfig_pool_remote_ip')
         self.setupIptables()

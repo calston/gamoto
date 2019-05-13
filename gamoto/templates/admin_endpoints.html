@@ -6,7 +6,7 @@
 <br/><br/>
 {% for group in groups %}
 <div class="card bg-light">
-  <div class="card-header">Group: {{group.name}}</div>
+  <div class="card-header">{{group.name}}</div>
   <div class="card-body">
     <p class="card-text">
     <table class="table">
@@ -23,13 +23,13 @@
           <td>{{subnet.name}}</td>
           <td>{{subnet.subnet}}</td>
           <td>
-            <a href="{% url "remove_group_subnet" group_id=group.id permission_id=subnet.id %}" class="btn btn-sm btn-danger">X</a>
+            <a href="{% url "remove_group_subnet" group_id=group.id permission_id=subnet.id %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    <a href="{% url "add_group_subnet" group_id=group.id %}" class="btn btn-sm btn-info">Add subnet</a>
-    <a href="{% url "delete_group" group_id=group.id %}" class="btn btn-sm btn-danger">Delete group</a>
+    <a href="{% url "add_group_subnet" group_id=group.id %}" class="btn btn-sm btn-info"><i class="fas fa-plus"></i></a>
+    <a href="{% url "delete_group" group_id=group.id %}" onclick="return window.confirm('Are you sure you want to delete {{group.name}}?');" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
     </p>
   </div>
 </div>

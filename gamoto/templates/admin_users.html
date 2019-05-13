@@ -17,6 +17,7 @@
           <th scope="col">Remote IP</th>
           <th scope="col">Groups</th>
           <th scope="col"></th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +34,16 @@
           </td>
           <td>
             <a href="{% url "user_groups" user_id=user.id %}" class="btn btn-sm btn-info">Edit Groups</a>
+          </td>
+          <td>
+            {% if user.active %}
+            <a href="{% url "user_disable" user_id=user.id %}"  class="btn btn-sm btn-danger">Disable</a>
+            {% else %}
+            <a href="{% url "user_enable" user_id=user.id %}" class="btn btn-sm btn-success">Enable</a>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url "user_delete" user_id=user.id %}" onclick="return window.confirm('Are you sure you want to delete {{user.name}}?');" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
           </td>
         </tr>
         {% endfor %}
