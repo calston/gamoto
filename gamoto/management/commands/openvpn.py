@@ -63,7 +63,8 @@ class Command(BaseCommand):
         if not (name and src and dest):
             return None
 
-        rules = self.getIptables()['filter']['openvpn']['rules']
+        rules = self.getIptables().get('filter', {}).get('openvpn', {}).get(
+            'rules', [])
 
         rule = '-A openvpn -i tun0 -s %s -d %s -m comment --comment "%s"' % (
             src, dest, name
@@ -73,11 +74,11 @@ class Command(BaseCommand):
             self.iptables(rule)
 
     def flushClient(self, name):
-        rules = self.getIptables()['filter']['openvpn']['rules']
+        rules = self.getIptables().get('filter', {}).get('openvpn', {}).get(
+            'rules', [])
         for i, r in enumerate(rules):
-            idx = str(i + 1)
             if name in r.split()[-1]:
-                users.sudo('/sbin/iptables', '-D', 'openvpn', idx)
+                self.iptables('-D openvpn %s' % (i + 1))
 
     def connect(self, user):
         u = User.objects.get(username=user)
@@ -86,15 +87,17 @@ class Command(BaseCommand):
             self.stderr.write('User '+user+' disabled\n')
             sys.exit(1)
 
-        subnets = openvpn.getRoutes(user)
-        ip = os.getenv('ifconfig_pool_remote_ip')
-        self.setupIptables()
+        if settings.MANAGE_IPTABLES:
+            subnets = openvpn.getRoutes(user)
 
-        for subnet in subnets:
-            self.allowClient(user, ip, subnet)
+            if subnets:
+                ip = os.getenv('ifconfig_pool_remote_ip')
+                for subnet in subnets:
+                    self.allowClient(user, ip, subnet)
 
     def disconnect(self, user):
-        self.flushClient(user)
+        if settings.MANAGE_IPTABLES:
+            self.flushClient(user)
 
     def handle(self, *args, **options):
         script_type = os.getenv('script_type')
@@ -105,12 +108,14 @@ class Command(BaseCommand):
             sys.exit(1)
 
         if settings.MANAGE_IPTABLES:
-            if script_type == 'client-connect':
-                self.connect(user)
+            self.setupIptables()
 
-            elif script_type == 'client-disconnect':
-                self.disconnect(user)
+        if script_type == 'client-connect':
+            self.connect(user)
 
-            else:
-                self.stderr.write('Not sure what you want me to do :(')
-                sys.exit(1)
+        elif script_type == 'client-disconnect':
+            self.disconnect(user)
+
+        else:
+            self.stderr.write('Not sure what you want me to do :(')
+            sys.exit(1)

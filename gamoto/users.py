@@ -92,7 +92,7 @@ def getVPNInline(name):
 
     ca = open(server_cert).read()
     config.append('<ca>\n%s</ca>\n' % ca)
-    
+
     key = open(user_key).read()
     config.append('<key>\n%s</key>\n' % key)
 
@@ -100,6 +100,7 @@ def getVPNInline(name):
     config.append('<cert>\n%s</cert>\n' % cert)
 
     return '\n'.join(config)
+
 
 def getVPNZIP(name):
     user_cert = os.path.join(settings.CA_PATH, name + '.crt')
