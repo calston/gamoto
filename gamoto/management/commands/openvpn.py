@@ -66,8 +66,8 @@ class Command(BaseCommand):
         rules = self.getIptables().get('filter', {}).get('openvpn', {}).get(
             'rules', [])
 
-        rule = '-A openvpn -i tun0 -s %s -d %s -m comment --comment "%s"' % (
-            src, dest, name
+        rule = '-A openvpn -i %s -s %s -d %s -m comment --comment "%s" %s' % (
+            'tun0', src, dest, name, '-j ACCEPT'
         )
 
         if rule not in rules:
