@@ -12,10 +12,10 @@ def validate_ipv4_cidr(value):
     if '/' in value:
         value, prefix = value.split('/')
         try:
-            assert(1 <= int(prefix) <= 32)
+            assert(0 <= int(prefix) <= 32)
         except AssertionError:
             raise validators.ValidationError(
-                "CIDR prefix must be between 1 and 32")
+                "CIDR prefix must be between 0 and 32")
         except ValueError:
             raise validators.ValidationError(
                 "CIDR prefix must be an integer")
