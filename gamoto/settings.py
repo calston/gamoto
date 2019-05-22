@@ -21,6 +21,8 @@ VPN_INTERFACE = 'tun0'
 
 MANAGE_IPTABLES = True
 
+DEFAULT_DENY = True
+
 CA_SETUP = {
     'org': 'ACME Corp',
     'ou': 'IT',
@@ -144,6 +146,9 @@ if 'main' in config:
     SECRET_KEY = config['main'].get('cookie_secret', SECRET_KEY)
     MANAGE_IPTABLES = config['main'].getboolean('manage_iptables',
                                                 MANAGE_IPTABLES)
+
+    DEFAULT_DENY = config['main'].getboolean('default_deny',
+                                             DEFAULT_DENY)
 
     PAGE_TITLE = config['main'].get('page_title', PAGE_TITLE)
 

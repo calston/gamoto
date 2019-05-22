@@ -12,6 +12,11 @@ import sys
 class Command(BaseCommand):
     help = 'OpenVPN client-connect scripts'
 
+    def __init__(self, *a, **kw):
+        BaseCommand.__init__(self, *a, **kw)
+
+        self.ipt = iptables.IPTables()
+
     def add_arguments(self, parser):
         parser.add_argument('client_cmd_path', nargs='?', type=str)
 
@@ -28,11 +33,11 @@ class Command(BaseCommand):
             if subnets:
                 ip = os.getenv('ifconfig_pool_remote_ip')
                 for subnet in subnets:
-                    self.allowClient(user, ip, subnet)
+                    self.ipt.allowClient(user, ip, subnet)
 
     def disconnect(self, user):
         if settings.MANAGE_IPTABLES:
-            self.flushClient(user)
+            self.ipt.flushClient(user)
 
     def handle(self, *args, **options):
         script_type = os.getenv('script_type')
@@ -43,7 +48,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         if settings.MANAGE_IPTABLES:
-            self.setupIptables()
+            self.ipt.setupIptables()
 
         if script_type == 'client-connect':
             self.connect(user)

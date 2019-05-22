@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from gamoto import users
 
 
@@ -48,16 +50,16 @@ class IPTables(object):
                 token, chain, args = r.split(None, 2)
                 self.tables[table][chain]['rules'].append(args)
 
-    def iptables(self, rule):
+    def iptables(self, *rule):
         result, err = users.sudo('/sbin/iptables', *rule)
         if err:
             raise Exception(err)
 
     def getTable(self, table):
-        return self.table.get(table, {})
+        return self.tables.get(table, {})
 
     def getChain(self, table, chain):
-        return self.table.get(table, {}).get(chain, {})
+        return self.tables.get(table, {}).get(chain, {})
 
     def createChain(self, table, chain):
         if chain not in self.getTable(table):
@@ -68,7 +70,7 @@ class IPTables(object):
 
         rtest = [match, '-j', action]
         if comment:
-            rtest.append('-m comment --comment', '"%s"' % comment)
+            rtest.append('-m comment --comment %s' % comment)
 
         if ' '.join(rtest) in rules:
             return
@@ -80,12 +82,14 @@ class IPTables(object):
         else:
             rule.extend(['-A', chain])
 
-        rule.extend([match, '-j', action])
+        rule.append(match)
 
         if comment:
-            rule.extend([, '-m', 'comment', '--comment', comment])
+            rule.extend(['-m', 'comment', '--comment', comment])
 
-        self.iptables(rule)
+        rule.extend(['-j', action])
+
+        self.iptables(*rule)
 
     def setupIptables(self):
         # Makes sure iptables has our chain
@@ -107,9 +111,9 @@ class IPTables(object):
         if not (name and src and dest):
             return None
 
-        rule = '-i %s -s %s -d %s ' % (self.VPN_INTERFACE, src, dest)
+        rule = '-i %s -s %s -d %s' % (settings.VPN_INTERFACE, src, dest)
 
-        self.addRule('filter', 'INPUT', rule, 'ACCEPT', comment=name)
+        self.addRule('filter', 'openvpn', rule, 'ACCEPT', comment=name)
 
     def flushClient(self, name):
         self.refreshTables()
@@ -117,4 +121,4 @@ class IPTables(object):
 
         for i, r in enumerate(rules):
             if name in r:
-                self.iptables('-D openvpn %s' % (i + 1))
+                self.iptables('-t', 'filter', '-D', 'openvpn', '%s' % (i + 1))

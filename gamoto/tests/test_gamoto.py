@@ -74,6 +74,10 @@ class TestOpenvpn(TestCase):
         elif a[1] == '-N':
             data.IPTABLES_SAVE.insert(5, ":%s - [0:0]" % a[2])
 
+        elif a[1] == '-t':
+            if a[2] == '-A':
+                data.IPTABLES_SAVE.insert(6, ' '.join(a[3:]))
+
         elif a[1] == '-A':
             data.IPTABLES_SAVE.insert(6, ' '.join(a[1:]))
 
@@ -102,19 +106,19 @@ class TestOpenvpn(TestCase):
 
         cmd = openvpn.Command()
 
-        tables = cmd.getIptables()
+        tables = cmd.ipt.refreshTables()
 
-        cmd.setupIptables()
+        cmd.ipt.setupIptables()
 
-        tables = cmd.getIptables()
+        tables = cmd.ipt.refreshTables()
 
         self.blank_ipt = False
 
         self.assertListEqual(self.sudo_commands, [
-            'iptables-save',
-            'iptables-save',
-            '/sbin/iptables -N openvpn',
-            '/sbin/iptables -I INPUT 1 -i tun0 -j openvpn',
+            'iptables-save', 'iptables-save', 'iptables-save',
+            '/sbin/iptables -t filter -N openvpn',
+            '/sbin/iptables -t filter -I INPUT 1 -i tun0 -j openvpn',
+            '/sbin/iptables -t filter -A INPUT -i tun0 -j DROP',
             'iptables-save'
         ])
 
@@ -134,9 +138,11 @@ class TestOpenvpn(TestCase):
 
         self.assertListEqual(self.sudo_commands, [
             'iptables-save',
-            '/sbin/iptables -N openvpn',
-            '/sbin/iptables -I INPUT 1 -i tun0 -j openvpn',
             'iptables-save',
-            '/sbin/iptables -A openvpn -i tun0 -s 10.88.20.35 -d 10.1.2.0/24'
-            ' -m comment --comment "test" -j ACCEPT'
+            '/sbin/iptables -t filter -N openvpn',
+            '/sbin/iptables -t filter -I INPUT 1 -i tun0 -j openvpn',
+            '/sbin/iptables -t filter -A INPUT -i tun0 -j DROP',
+            'iptables-save',
+            '/sbin/iptables -t filter -A openvpn -i tun0 -s 10.88.20.35 -d'
+            ' 10.1.2.0/24 -m comment --comment test -j ACCEPT'
         ])
