@@ -8,19 +8,21 @@ def validate_ipv4_cidr(value):
     """
     Validates a CIDR field
     """
+    vals = value.split(',')
 
-    if '/' in value:
-        value, prefix = value.split('/')
-        try:
-            assert(0 <= int(prefix) <= 32)
-        except AssertionError:
-            raise validators.ValidationError(
-                "CIDR prefix must be between 0 and 32")
-        except ValueError:
-            raise validators.ValidationError(
-                "CIDR prefix must be an integer")
+    for val in vals:
+        if '/' in val:
+            ip, prefix = val.split('/')
+            try:
+                assert(0 <= int(prefix) <= 32)
+            except AssertionError:
+                raise validators.ValidationError(
+                    "CIDR prefix must be between 0 and 32")
+            except ValueError:
+                raise validators.ValidationError(
+                    "CIDR prefix must be an integer")
 
-    validators.validate_ipv4_address(value)
+            validators.validate_ipv4_address(ip)
 
 
 class CIDRField(forms.GenericIPAddressField):
@@ -33,6 +35,10 @@ class GroupForm(forms.ModelForm):
     """
     Form for creating endpoint groups
     """
+
+    default = forms.BooleanField(initial=False, required=False)
+
+
     class Meta:
         model = Group
         exclude = ()

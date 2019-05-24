@@ -1,6 +1,6 @@
 # Openvpn helper things
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission, Group
 
 from gamoto import users
 
@@ -65,6 +65,18 @@ def getClient(name):
     return getStatus().get(name, None)
 
 
+def getSubnets(group):
+    subnets = []
+    permissions = group.permissions.filter(content_type__app_label='subnet')
+    for p in permissions:
+        subnetd = p.codename.split('_')[-1].split(',')
+
+        for subnet in subnetd:
+            if subnet not in subnets:
+                subnets.append(subnet)
+
+    return subnets
+
 def getRoutes(user):
     if isinstance(user, str):
         user = User.objects.get(username=user)
@@ -78,12 +90,14 @@ def getRoutes(user):
     groups = user.groups.all()
 
     for group in groups:
-        permissions = group.permissions.all()
-        for p in permissions:
-            subnet = p.codename.split('_')[-1]
+        subnets.extend(getSubnets(group))
 
-            if subnet not in subnets:
-                subnets.append(subnet)
+    default_permission = Permission.objects.get(codename='default_group')
+
+    groups = Group.objects.filter(permissions__codename='default_group')
+
+    for group in groups:
+        subnets.extend(getSubnets(group))
 
     return subnets
 
@@ -101,6 +115,8 @@ def updateCCDs():
             user_ccd_path = os.path.join(ccd_path, user.username)
             with open(user_ccd_path, 'wt') as user_ccd:
                 for subnet in subnets:
+                    if not '/' in subnet:
+                        subnet += '/32'
                     net = ipaddress.ip_network(subnet)
                     user_ccd.write('push "route %s %s"\n' % (
                         net.network_address.exploded,

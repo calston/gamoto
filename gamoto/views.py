@@ -123,8 +123,16 @@ def group_create(request):
         form = forms.GroupForm(request.POST)
         if form.is_valid():
             group = form.save(commit=False)
+
+            default = form.cleaned_data['default']
             group.save()
             form.save_m2m()
+
+            if default:
+                permission = Permission.objects.get(codename='default_group')
+                group.permissions.add(permission)
+                group.save()
+
             openvpn.updateCCDs()
 
             return redirect('endpoints')

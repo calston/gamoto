@@ -4,13 +4,52 @@ from django.urls.resolvers import URLPattern
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
+from bs4 import BeautifulSoup
+
 from gamoto.tests import data
 
 import os
+import shutil
 
 
 # Create your tests here.
 class TestRockFace(TestCase):
+    def setUp(self):
+        from gamoto.management.commands import setup
+        cmd = setup.Command()
+
+        cmd._status = lambda var: None
+        cmd.stdout.write = lambda var, ending=None: None
+
+        cmd.configureDB()
+        self.content_type = ContentType.objects.get(app_label='subnet')
+
+        self.admin = User.objects.create_user(
+            username='admin',
+            password='12345',
+            is_staff=True,
+            is_superuser=True
+        )
+        self.user = User.objects.create_user(
+            username='test',
+            password='12345'
+        )
+
+        self.temp_path = os.path.join(os.getcwd(), '.test_tmp')
+        os.makedirs(self.temp_path)
+        os.makedirs(os.path.join(self.temp_path, 'users'))
+        os.makedirs(os.path.join(self.temp_path, 'ccd'))
+        os.makedirs(os.path.join(self.temp_path, 'ca'))
+
+        self.test_settings = {
+            'BASE_PATH': self.temp_path,
+            'USER_PATH': os.path.join(self.temp_path, 'users'),
+            'CA_PATH': os.path.join(self.temp_path, 'ca')
+        }
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_path)
+
     def test_authentication_required(self):
         from gamoto import urls
 
@@ -31,7 +70,99 @@ class TestRockFace(TestCase):
             self.assertRedirects(r, reverse('login')+'?next=' + path)
 
     def test_login(self):
-        self.client.login(username='test', password='test')
+        self.client.login(username='test', password='12345')
+
+    def formTester(self, name, redirects_to, data, kwargs={}):
+        self.client.login(username='admin', password='12345')
+
+        url = reverse(name, kwargs=kwargs)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        form = soup.form
+
+        self.assertEqual(form['action'], url)
+
+        response = self.client.post(url, data)
+        self.assertRedirects(response, reverse(redirects_to))
+
+    def test_create_group(self):
+        self.formTester('create_group', 'endpoints', {
+            'name': 'test group',
+            'default': False,
+        })
+
+        group = Group.objects.get(name='test group')
+
+    def test_create_subnet(self):
+        group = Group.objects.create(name='test group')
+        group.save()
+
+        subnets = ['192.168.0.1', '192.2.3.0/24', '10.10.10.10,10.20.0.0/16',
+                   '10.10.0.0/24,10.20.0.0/16']
+
+        for num, subnet in enumerate(subnets):
+            self.formTester('add_group_subnet', 'endpoints', {
+                'name': 'test subnet %s' % num,
+                'subnet': subnet
+            }, kwargs={'group_id': group.id})
+
+        db_subnets = group.permissions.all()
+
+        for subnet in db_subnets:
+            self.assertIn(subnet.codename.split('_')[-1], subnets)
+
+    def test_add_user_group(self):
+        group = Group.objects.create(name='test group')
+        group.save()
+        perm = Permission.objects.create(
+            name='test subnet',
+            codename='network_10.1.1.0/24,10.1.2.0/24',
+            content_type=self.content_type
+        )
+        perm.save()
+        group.permissions.add(perm)
+        group.save()
+
+        with self.settings(**self.test_settings):
+            user_groups = self.formTester('user_groups', 'users', {
+                'groups': group.id,
+            }, kwargs={'user_id': self.user.id})
+
+        from gamoto import openvpn
+
+        routes = openvpn.getRoutes('test')
+
+        self.assertEquals(routes[0], '10.1.1.0/24')
+        self.assertEquals(routes[1], '10.1.2.0/24')
+
+    def test_default_group(self):
+        with self.settings(**self.test_settings):
+            self.formTester('create_group', 'endpoints', {
+                'name': 'test group',
+                'default': True,
+            })
+
+            group = Group.objects.get(name='test group')
+
+            perm = Permission.objects.create(
+                name='test subnet',
+                codename='network_10.1.1.0/24,10.1.2.0/24',
+                content_type=self.content_type
+            )
+            perm.save()
+            group.permissions.add(perm)
+            group.save()
+
+            from gamoto import openvpn
+
+            routes = openvpn.getRoutes('test')
+
+            self.assertEquals(routes[0], '10.1.1.0/24')
+            self.assertEquals(routes[1], '10.1.2.0/24')
 
 
 class TestOpenvpn(TestCase):
@@ -41,23 +172,30 @@ class TestOpenvpn(TestCase):
 
         self.ipt_copy = [i for i in data.IPTABLES_SAVE]
 
-        ctype = ContentType.objects.create(
-            app_label='subnet',
-            model='group'
-        )
+        from gamoto.management.commands import setup
+        cmd = setup.Command()
+
+        cmd._status = lambda var: None
+        cmd.stdout.write = lambda var, ending=None: None
+
+        cmd.configureDB()
+
+        self.content_type = ContentType.objects.get(app_label='subnet')
 
         group = Group.objects.create(name="testgroup")
-
-        user = User.objects.create(username="test", email="test@mail.com")
-        user.groups.add(group)
 
         perm = Permission.objects.create(
             codename="network_10.1.2.0/24",
             name="My network",
-            content_type=ctype
+            content_type=self.content_type
         )
 
         group.permissions.add(perm)
+        group.save()
+
+        user = User.objects.create(username="test", email="test@mail.com")
+        user.groups.add(group)
+        user.save()
 
     def tearDown(self):
         data.IPTABLES_SAVE = self.ipt_copy
