@@ -28,6 +28,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         if settings.MANAGE_IPTABLES:
+            self.ipt.flushClient(user)
             subnets = openvpn.getRoutes(user)
 
             if subnets:

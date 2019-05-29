@@ -41,16 +41,16 @@ class IPTables(object):
                 if default == '-':
                     default = None
 
-                if chain not in self.tables[table]:
-                    self.tables[table][chain] = {
-                        'default': default,
-                        'rules': []
-                    }
+                self.tables[table][chain] = {
+                    'default': default,
+                    'rules': []
+                }
             elif r.startswith('-'):
                 token, chain, args = r.split(None, 2)
                 self.tables[table][chain]['rules'].append(args)
 
     def iptables(self, *rule):
+        print(repr(rule))
         result, err = users.sudo('/sbin/iptables', *rule)
         if err:
             raise Exception(err)
@@ -119,6 +119,6 @@ class IPTables(object):
         self.refreshTables()
         rules = self.getChain('filter', 'openvpn').get('rules', [])
 
-        for i, r in enumerate(rules):
+        for i, r in reversed(list(enumerate(rules))):
             if name in r:
-                self.iptables('-t', 'filter', '-D', 'openvpn', '%s' % (i + 1))
+                self.iptables('-t', 'filter', '-D', 'openvpn', '%s' % (i+1))
