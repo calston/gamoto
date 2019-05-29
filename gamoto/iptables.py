@@ -82,7 +82,7 @@ class IPTables(object):
         else:
             rule.extend(['-A', chain])
 
-        rule.append(match)
+        rule.extend(match.split())
 
         if comment:
             rule.extend(['-m', 'comment', '--comment', comment])

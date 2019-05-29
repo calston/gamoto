@@ -201,6 +201,10 @@ class TestOpenvpn(TestCase):
         data.IPTABLES_SAVE = self.ipt_copy
 
     def _fake_sudo(self, *a):
+        for arg in a:
+            if ' ' in arg:
+                raise Exception(
+                    "Space in '%s'. Are arguments split?" % repr(a))
         self.sudo_commands.append(' '.join(a))
         result = b''
         if 'iptables-save' in a:
