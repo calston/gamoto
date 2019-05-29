@@ -50,7 +50,6 @@ class IPTables(object):
                 self.tables[table][chain]['rules'].append(args)
 
     def iptables(self, *rule):
-        print(repr(rule))
         result, err = users.sudo('/sbin/iptables', *rule)
         if err:
             raise Exception(err)
