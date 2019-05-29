@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='gamoto',
-    version='0.0.12',
+    version='0.0.13',
     url='http://github.com/calston/gamoto',
     description='A web portal for VPN self service',
     classifiers=[
@@ -19,6 +19,7 @@ setup(
         'django==2.2',
         'social-auth-app-django',
         'pyotp',
-        'gunicorn'
+        'gunicorn',
+        'django-crispy-forms'
     ],
 )

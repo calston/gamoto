@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -139,6 +140,8 @@ def group_create(request):
     else:
         form = forms.GroupForm()
 
+    form.helper.form_action = reverse('create_group')
+
     return render(request, 'admin_group_create.html', {
         'page_title': settings.PAGE_TITLE,
         'form': form,
@@ -159,6 +162,8 @@ def subnet_create(request):
             return redirect('endpoints')
     else:
         form = forms.SubnetForm()
+
+    form.helper.form_action = reverse('create_subnet')
 
     return render(request, 'admin_subnet_create.html', {
         'page_title': settings.PAGE_TITLE,
@@ -217,6 +222,9 @@ def group_subnet_add(request, group_id):
             return redirect('endpoints')
     else:
         form = forms.GroupSubnetForm()
+
+    form.helper.form_action = reverse('add_group_subnet',
+                                      kwargs={'group_id': group_id})
 
     return render(request, 'admin_subnet_add.html', {
         'page_title': settings.PAGE_TITLE,
@@ -286,6 +294,9 @@ def user_group_modify(request, user_id):
             return redirect('users')
     else:
         form = forms.UserGroupForm(instance=user)
+
+    form.helper.form_action = reverse('user_groups',
+                                      kwargs={'user_id': user_id})
 
     return render(request, 'user_group_modify.html', {
         'page_title': settings.PAGE_TITLE,

@@ -1,7 +1,10 @@
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
-from django import forms
 from django.core import validators
+from django import forms
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
 
 
 def validate_ipv4_cidr(value):
@@ -38,7 +41,6 @@ class GroupForm(forms.ModelForm):
 
     default = forms.BooleanField(initial=False, required=False)
 
-
     class Meta:
         model = Group
         exclude = ()
@@ -52,6 +54,10 @@ class GroupForm(forms.ModelForm):
         self.fields['permissions'].queryset = permission_query
         self.fields['permissions'].label_from_instance = self.label_permission
 
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save'))
+
     def label_permission(self, obj):
         subnet = obj.codename.split('_')[-1]
         return obj.name + ': ' + subnet
@@ -64,6 +70,12 @@ class UserGroupForm(forms.ModelForm):
                    'last_name', 'last_login', 'is_staff', 'is_active',
                    'is_superuser', 'email', 'date_joined')
 
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save'))
+
 
 class SubnetForm(forms.ModelForm):
     """
@@ -73,6 +85,12 @@ class SubnetForm(forms.ModelForm):
         model = Permission
         exclude = ()
 
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save'))
+
 
 class GroupSubnetForm(forms.Form):
     """
@@ -80,3 +98,9 @@ class GroupSubnetForm(forms.Form):
     """
     name = forms.CharField(min_length=2, max_length=128)
     subnet = CIDRField()
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save'))

@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'social_django',
+    'crispy_forms',
     'gamoto'
 ]
 
@@ -74,6 +75,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'gamoto.urls'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 TEMPLATES = [
     {
