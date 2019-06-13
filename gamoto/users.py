@@ -87,6 +87,7 @@ def getVPNInline(name):
         "persist-key",
         "persist-tun",
         "verb 3",
+        "reneg-sec 0",
         "auth-user-pass"
     ]
 
@@ -123,6 +124,7 @@ def getVPNZIP(name):
         "cert %s.crt" % name,
         "key %s.key" % name,
         "verb 3",
+        "reneg-sec 0",
         "auth-user-pass"
     ]
 
