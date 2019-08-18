@@ -151,29 +151,6 @@ def group_create(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
-def subnet_create(request):
-    if request.method == "POST":
-        form = forms.SubnetForm(request.POST)
-        if form.is_valid():
-            subnet = form.save(commit=False)
-            subnet.save()
-            openvpn.updateCCDs()
-
-            return redirect('endpoints')
-    else:
-        form = forms.SubnetForm()
-
-    form.helper.form_action = reverse('create_subnet')
-
-    return render(request, 'admin_subnet_create.html', {
-        'page_title': settings.PAGE_TITLE,
-        'form': form,
-        'sbactive': 'endpoints',
-        'admin': request.user.is_superuser
-    })
-
-
-@user_passes_test(lambda u: u.is_superuser)
 def group_delete(request, group_id):
     grp = Group.objects.get(id=group_id)
     grp.delete()
@@ -234,6 +211,49 @@ def group_subnet_add(request, group_id):
         'group': group,
         'admin': request.user.is_superuser
     })
+
+@user_passes_test(lambda u: u.is_superuser)
+def group_host_add(request, group_id):
+    group = Group.objects.get(id=group_id)
+
+    if request.method == "POST":
+        form = forms.GroupHostForm(request.POST)
+        if form.is_valid():
+            gslink = form.cleaned_data
+
+            perm_name = "host_%s" % gslink['subnet']
+
+            content_type = ContentType.objects.get(app_label='subnet')
+
+            try:
+                permission = Permission.objects.get(codename=perm_name)
+            except ObjectDoesNotExist:
+                permission = Permission.objects.create(
+                    codename=perm_name,
+                    name=gslink['name'],
+                    content_type=content_type
+                )
+                permission.save()
+
+            group.permissions.add(permission)
+            openvpn.updateCCDs()
+
+            return redirect('endpoints')
+    else:
+        form = forms.GroupHostForm()
+
+    form.helper.form_action = reverse('add_group_host',
+                                      kwargs={'group_id': group_id})
+
+    return render(request, 'admin_subnet_add.html', {
+        'page_title': settings.PAGE_TITLE,
+        'form': form,
+        'sbactive': 'endpoints',
+        'group_id': group_id,
+        'group': group,
+        'admin': request.user.is_superuser
+    })
+
 
 
 @user_passes_test(lambda u: u.is_superuser)

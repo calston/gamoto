@@ -77,21 +77,6 @@ class UserGroupForm(forms.ModelForm):
         self.helper.add_input(Submit('submit', 'Save'))
 
 
-class SubnetForm(forms.ModelForm):
-    """
-    Form for creating endpoint groups
-    """
-    class Meta:
-        model = Permission
-        exclude = ()
-
-    def __init__(self, *a, **kw):
-        super().__init__(*a, **kw)
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
-        self.helper.add_input(Submit('submit', 'Save'))
-
-
 class GroupSubnetForm(forms.Form):
     """
     Add subnet to group form
@@ -104,3 +89,17 @@ class GroupSubnetForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Save'))
+
+class GroupHostForm(forms.Form):
+    """
+    Add host to group form
+    """
+    name = forms.CharField(min_length=2, max_length=128)
+    subnet = forms.CharField(max_length=512)
+
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.add_input(Submit('submit', 'Save'))
+
