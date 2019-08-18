@@ -212,6 +212,7 @@ def group_subnet_add(request, group_id):
         'admin': request.user.is_superuser
     })
 
+
 @user_passes_test(lambda u: u.is_superuser)
 def group_host_add(request, group_id):
     group = Group.objects.get(id=group_id)
@@ -221,7 +222,7 @@ def group_host_add(request, group_id):
         if form.is_valid():
             gslink = form.cleaned_data
 
-            perm_name = "host_%s" % gslink['subnet']
+            perm_name = "host_%s" % gslink['hostname']
 
             content_type = ContentType.objects.get(app_label='subnet')
 
@@ -245,7 +246,7 @@ def group_host_add(request, group_id):
     form.helper.form_action = reverse('add_group_host',
                                       kwargs={'group_id': group_id})
 
-    return render(request, 'admin_subnet_add.html', {
+    return render(request, 'admin_host_add.html', {
         'page_title': settings.PAGE_TITLE,
         'form': form,
         'sbactive': 'endpoints',
@@ -253,7 +254,6 @@ def group_host_add(request, group_id):
         'group': group,
         'admin': request.user.is_superuser
     })
-
 
 
 @user_passes_test(lambda u: u.is_superuser)

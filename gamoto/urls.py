@@ -47,6 +47,8 @@ urlpatterns = [
          name="delete_group"),
     path('add_group_subnet/<int:group_id>/', views.group_subnet_add,
          name="add_group_subnet"),
+    path('add_group_host/<int:group_id>/', views.group_host_add,
+         name="add_group_host"),
     path('remove_group_subnet/<int:group_id>/<int:permission_id>/',
          views.group_subnet_remove, name="remove_group_subnet"),
     path('user_groups/<int:user_id>/',

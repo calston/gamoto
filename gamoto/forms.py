@@ -95,7 +95,7 @@ class GroupHostForm(forms.Form):
     Add host to group form
     """
     name = forms.CharField(min_length=2, max_length=128)
-    subnet = forms.CharField(max_length=512)
+    hostname = forms.CharField(max_length=512)
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)

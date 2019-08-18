@@ -285,6 +285,7 @@ class TestOpenvpn(TestCase):
             '/sbin/iptables -t filter -I INPUT 1 -i tun0 -j openvpn',
             '/sbin/iptables -t filter -A INPUT -i tun0 -j DROP',
             'iptables-save',
+            'iptables-save',
             '/sbin/iptables -t filter -A openvpn -i tun0 -s 10.88.20.35 -d'
             ' 10.1.2.0/24 -m comment --comment test -j ACCEPT'
         ])
