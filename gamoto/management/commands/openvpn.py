@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('client_cmd_path', nargs='?', type=str)
 
-    def connect(self, user):
+    def connect(self, user, ccd_file):
         u = User.objects.get(username=user)
 
         if not u.is_active:
@@ -36,6 +36,9 @@ class Command(BaseCommand):
                 for subnet in subnets:
                     self.ipt.allowClient(user, ip, subnet)
 
+        if ccd_file:
+            openvpn.updateCCDs(ccd_file)
+
     def disconnect(self, user):
         if settings.MANAGE_IPTABLES:
             self.ipt.flushClient(user)
@@ -43,6 +46,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         script_type = os.getenv('script_type')
         user = os.getenv('common_name')
+        ccd_file = options.get('client_cmd_path', None)
+
         if not user:
             self.stderr.write(
                 'Error, no CN found. This script must be run by OpenVPN!')
@@ -52,7 +57,7 @@ class Command(BaseCommand):
             self.ipt.setupIptables()
 
         if script_type == 'client-connect':
-            self.connect(user)
+            self.connect(user, ccd_file)
 
         elif script_type == 'client-disconnect':
             self.disconnect(user)

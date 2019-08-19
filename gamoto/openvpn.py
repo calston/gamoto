@@ -1,11 +1,18 @@
 # Openvpn helper things
 from django.conf import settings
-from django.contrib.auth.models import User, Permission, Group
+
+from django.core.exceptions import AppRegistryNotReady
+
+try:
+    from django.contrib.auth.models import User, Permission, Group
+except AppRegistryNotReady:
+    pass
 
 from gamoto import users
 
 import os
 import ipaddress
+import socket
 
 
 def _readlog(statuslog):
@@ -65,17 +72,35 @@ def getClient(name):
     return getStatus().get(name, None)
 
 
+def getHostIPs(hostname):
+    addr_list = []
+
+    for addr in socket.getaddrinfo(hostname, 443):
+        ip = addr[4][0]
+        if (not ":" in ip) and (not ip in addr_list):
+            addr_list.append(ip)
+
+    return addr_list
+
+
 def getSubnets(group):
     subnets = []
     permissions = group.permissions.filter(content_type__app_label='subnet')
     for p in permissions:
-        subnetd = p.codename.split('_')[-1].split(',')
+        item_type, subnet = p.codename.split('_')
 
-        for subnet in subnetd:
-            if subnet not in subnets:
-                subnets.append(subnet)
+        if item_type == 'network':
+            subnetd = subnet.split(',')
+
+            for subnet in subnetd:
+                if subnet not in subnets:
+                    subnets.append(subnet)
+
+        elif item_type == 'host':
+            subnets.extend(getHostIPs(subnet))
 
     return subnets
+
 
 def getRoutes(user):
     if isinstance(user, str):
@@ -102,10 +127,12 @@ def getRoutes(user):
     return subnets
 
 
-def updateCCDs():
+def updateCCDs(ccd_path=None):
     db_users = User.objects.all()
 
-    ccd_path = os.path.join(settings.BASE_PATH, 'ccd')
+    if not ccd_path:
+        ccd_path = os.path.join(settings.BASE_PATH, 'ccd')
+
     if not os.path.exists(ccd_path):
         os.makedirs(ccd_path)
 
