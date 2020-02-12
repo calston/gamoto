@@ -16,7 +16,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'pyopenssl',
-        'django==2.2.3',
+        'django==2.2.10',
         'social-auth-app-django',
         'pyotp',
         'gunicorn',
