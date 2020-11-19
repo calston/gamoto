@@ -72,7 +72,7 @@ def createVPN(name):
 def getVPNInline(name):
     user_cert = os.path.join(settings.CA_PATH, name + '.crt')
     user_key = os.path.join(settings.CA_PATH, name + '.key')
-    server_cert = os.path.join(settings.CA_PATH, 'ca.crt')
+    ca_chain_cert = os.path.join(settings.CA_PATH, 'ca-chain.crt')
 
     if not os.path.exists(user_cert):
         raise Exception("Certificate does not exist")
@@ -91,8 +91,8 @@ def getVPNInline(name):
         "auth-user-pass"
     ]
 
-    ca = open(server_cert).read()
-    config.append('<ca>\n%s</ca>\n' % ca)
+    ca_chain = open(ca_chain_cert).read()
+    config.append('<ca>\n%s</ca>\n' % ca_chain)
 
     key = open(user_key).read()
     config.append('<key>\n%s</key>\n' % key)
@@ -106,7 +106,7 @@ def getVPNInline(name):
 def getVPNZIP(name):
     user_cert = os.path.join(settings.CA_PATH, name + '.crt')
     user_key = os.path.join(settings.CA_PATH, name + '.key')
-    server_cert = os.path.join(settings.CA_PATH, 'ca.crt')
+    ca_chain_cert = os.path.join(settings.CA_PATH, 'ca-chain.crt')
 
     if not os.path.exists(user_cert):
         raise Exception("Certificate does not exist")
@@ -120,7 +120,7 @@ def getVPNZIP(name):
         "nobind",
         "persist-key",
         "persist-tun",
-        "ca ca.crt",
+        "ca ca-chain.crt",
         "cert %s.crt" % name,
         "key %s.key" % name,
         "verb 3",
@@ -133,7 +133,7 @@ def getVPNZIP(name):
     with zipfile.ZipFile(zip_io, mode="w") as vpnzip:
         vpnzip.write(str(user_cert), arcname=name + '.crt')
         vpnzip.write(str(user_key), arcname=name + '.key')
-        vpnzip.write(str(server_cert), arcname='ca.crt')
+        vpnzip.write(str(ca_chain_cert), arcname='ca-chain.crt')
 
         vpnzip.writestr('client.ovpn', '\n'.join(config))
 
