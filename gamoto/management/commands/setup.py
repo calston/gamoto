@@ -47,6 +47,22 @@ class Command(BaseCommand):
         except IntegrityError:
             self._status(False)
 
+    def _createCAChain(self):
+        chain_path = settings.CA_PATH + '/ca-chain.crt'
+        if os.path.exists(chain_path):
+            self._status(False)
+            return    
+
+        filenames = [settings.CA_PATH + '/openvpn.crt', settings.CA_PATH  + '/ca.crt']
+        try:
+            with open(chain_path, 'w') as outfile:
+                for fname in filenames:
+                    with open(fname) as infile:
+                        outfile.write(infile.read())
+            self._status(True)
+        except IOError as ioe:
+            print(ioe)
+
     def configureCA(self):
         # Ensure paths exist
         for path in [settings.BASE_PATH, settings.CA_PATH, settings.USER_PATH]:
@@ -83,6 +99,11 @@ class Command(BaseCommand):
         self.stdout.write("Generating CRL... ", ending="")
         self.stdout.flush()
         self._status(myca.createCRL())
+
+        self.stdout.write("Generating CA Chain... ", ending="")
+        self.stdout.flush()
+        self._createCAChain()
+
 
     def handle(self, *args, **options):
         if (users.getSystemUID() != os.getuid()):
