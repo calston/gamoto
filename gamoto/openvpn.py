@@ -75,10 +75,13 @@ def getClient(name):
 def getHostIPs(hostname):
     addr_list = []
 
-    for addr in socket.getaddrinfo(hostname, 443):
-        ip = addr[4][0]
-        if (not ":" in ip) and (not ip in addr_list):
-            addr_list.append(ip)
+    try:
+        for addr in socket.getaddrinfo(hostname, 443):
+            ip = addr[4][0]
+            if (not ":" in ip) and (not ip in addr_list):
+                addr_list.append(ip)
+    except Exception as e:
+        pass
 
     return addr_list
 
