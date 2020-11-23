@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='gamoto',
-    version='0.0.17',
+    version='0.0.18',
     url='http://github.com/calston/gamoto',
     description='A web portal for VPN self service',
     classifiers=[
