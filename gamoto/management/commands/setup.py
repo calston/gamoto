@@ -53,7 +53,7 @@ class Command(BaseCommand):
             self._status(False)
             return    
 
-        filenames = [settings.CA_PATH + '/openvpn.crt', settings.CA_PATH  + '/ca.crt']
+        filenames = [settings.CA_PATH + '/ca.crt', settings.CA_PATH  + '/openvpn.crt']
         try:
             with open(chain_path, 'w') as outfile:
                 for fname in filenames:
